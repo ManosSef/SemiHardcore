@@ -1,0 +1,32 @@
+main: me.manossef.semihardcore.SemiHardcore
+name: SemiHardcore
+version: ${plugin.version}
+author: ManosSef
+api-version: 1.17
+commands:
+  lives:
+    description: Tells you how many lives you have.
+    usage: /lives
+  setlives:
+    description: Sets a player's lives to a specified number.
+    usage: /setlives <player> <number>
+    permission: semihardcore.setlives
+  addlife:
+    description: Adds a life to a player.
+    usage: /addlife <player>
+    permission: semihardcore.addlife
+  givelife:
+    description: Removes one of your lives and gives it to a specified player.
+    usage: /givelife <player>
+  revive:
+    description: Revives a dead player.
+    usage: /revive <player>
+    permission: semihardcore.revive
+permissions:
+  semihardcore.setlives:
+    description: Allows the use of the /setlives command.
+  semihardcore.addlife:
+    description: Allows the use of the /addlife command.
+  semihardcore.revive:
+    description: Allows the use of the /revive command.
+softdepend: [PlaceholderAPI]

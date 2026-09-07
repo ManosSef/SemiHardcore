@@ -1,0 +1,19 @@
+# SemiHardcore by ManosSef
+# https://www.spigotmc.org/resources/semihardcore.95152/
+
+# This is the configuration file for SemiHardcore.
+
+# starting-lives is the number of lives every player will start with.
+# If min and max are equal, all players will start with the same number of lives.
+# If min is less than max, players will start with a random number of lives within the specified range.
+# If min is greater than max, the plugin will not enable.
+
+# hardcore-hearts changes the hearts' appearance to hardcore hearts.
+
+# force-hard-difficulty forces the difficulty of all worlds to hard.
+
+# lives-limit limits the number of lives every player can have at the same time.
+# Setting this value to 0 removes the limit.
+
+# players-can-be-generous enables the use of the /givelife command. Turning this off will give your
+# server a 3rd Life style, since players won't be able to give other players lives.
