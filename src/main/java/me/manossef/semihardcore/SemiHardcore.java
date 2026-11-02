@@ -1,7 +1,9 @@
 package me.manossef.semihardcore;
 
-import com.google.gson.Gson;
-import com.google.gson.stream.JsonReader;
+import me.manossef.alexandria.Alexandria;
+import me.manossef.api.alexandria.TypeChecks;
+import me.manossef.api.alexandria.config.OptionValidations;
+import me.manossef.api.alexandria.updates.SpigotMCUpdateChecker;
 import me.manossef.semihardcore.commands.*;
 import me.manossef.semihardcore.data.LifeData;
 import me.manossef.semihardcore.data.Messages;
@@ -19,56 +21,51 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.net.URL;
+import java.net.MalformedURLException;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 /**
  * This is the main class of SemiHardcore. This class has control over everything happening in the plugin, keeping track
  * of its options, commands, and listeners.
- *
  * <p>
  * Every add-on for this plugin should first check if the plugin found on the server is an instance of this class, to
  * make sure the plugin is correct, and also so that the various resources contained in this class can be used.
- *
- * @author ManosSef
  */
 public class SemiHardcore extends JavaPlugin {
-
     private SemiHardcoreYmlFile livesFile;
     private SemiHardcoreYmlFile messagesFile;
     private LifeChanges lifeChanges;
     private Options options;
     private Messages messages;
     private LifeData lifeData;
-    private Map<String, UpdateChecker> addonsToBeChecked;
 
     /**
      * Runs automatically when the plugin is enabled, and must never be called by any plugin add-ons.
      */
     @Override
     public void onEnable() {
-
-        this.checkUpdates();
-        if(isUnsupportedVersion()) {
-
-            error("SemiHardcore has dropped support for versions below 1.17. This server is running a Minecraft version below 1.17, so this plugin is being disabled.");
+        Plugin alexandria = this.getServer().getPluginManager().getPlugin("Alexandria");
+        if(!(alexandria instanceof Alexandria parent)) {
+            this.error("Found a plugin called \"Alexandria\" but it seems as though it is the wrong one. Please download Alexandria by ManosSef at https://www.spigotmc.org/resources/alexandria.140195/");
             return;
-
+        }
+        parent.checkVersion("1.0.0", this);
+        try {
+            new SpigotMCUpdateChecker(this, 95152, "semihardcore").checkForUpdates();
+        } catch(MalformedURLException ignored) {
+        }
+        if(isUnsupportedVersion()) {
+            this.error("SemiHardcore has dropped support for versions below 1.17. This server is running a Minecraft version below 1.17, so this plugin is being disabled.");
+            return;
         }
         this.livesFile = new SemiHardcoreYmlFile(this, "lives.yml");
         this.messagesFile = new SemiHardcoreYmlFile(this, "messages.yml");
         File deadPlayersFile = new File(this.getDataFolder().toPath() + "/deadPlayers.yml");
         if(deadPlayersFile.exists()) {
-
             this.getLogger().log(Level.INFO, "Found legacy deadPlayers.yml file. Deleting.");
             if(!deadPlayersFile.delete())
                 this.getLogger().log(Level.WARNING, "Failed to delete deadPlayers.yml file.");
-
         }
         this.lifeChanges = new LifeChanges(this);
         if(!this.validateOptions()) return;
@@ -89,22 +86,15 @@ public class SemiHardcore extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new Listeners(this), this);
         this.registerCommands();
         if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-
             this.getLogger().log(Level.INFO, "PlaceholderAPI detected. Enabling placeholder expansion.");
             new Placeholders(this).register();
-
         }
         Bukkit.getOnlinePlayers().forEach(player -> {
-
             if(!this.lifeChanges.hasLives(player)) {
-
                 this.lifeChanges.setLives(player, this.lifeChanges.getLivesForNewPlayer());
                 this.lifeChanges.welcomeMessage(player);
-
             } else this.lifeChanges.livesMessage(player);
-
         });
-
     }
 
     /**
@@ -112,415 +102,144 @@ public class SemiHardcore extends JavaPlugin {
      */
     @Override
     public void onDisable() {
-
         if(isUnsupportedVersion())
             return;
         try {
-
             this.options.saveToFile(this.getConfig());
             this.saveConfig();
             this.messages.saveToFile(this.messagesFile.getConfig());
             this.messagesFile.saveConfig();
             this.lifeData.saveToFile(this.livesFile.getConfig());
             this.livesFile.saveConfig();
-
         } catch(Exception ignored) {
         }
         this.makeWorldsHardcoreHearts(false);
-
     }
 
     /**
      * Returns whether the Minecraft version the server is running is unsupported by the plugin. If the plugin has been successfully enabled, this can only return {@code false}.
-     *
      * @return {@code false}.
      */
     public static boolean isUnsupportedVersion() {
-
         return !Arrays.stream(Material.values()).map(Material::toString).toList().contains("DRIPSTONE_BLOCK");
-
     }
 
     private void makeWorldsHardcoreHearts(boolean hasHardcoreHearts) {
-
         Bukkit.getWorlds().forEach(world -> world.setHardcore(hasHardcoreHearts));
-
     }
 
     private void makeWorldsHard() {
-
         if(!this.getConfig().getBoolean("force-hard-difficulty"))
             return;
         Bukkit.getWorlds().forEach(world -> world.setDifficulty(Difficulty.HARD));
-
     }
 
     private boolean validateOptions() {
-
-        if(checkIntOption("starting-lives.min", 1)) return false;
-        if(checkIntOption("starting-lives.max", 1)) return false;
-        if(this.getConfig().getInt("starting-lives.min", 3) > this.getConfig().getInt("starting-lives.max", 3)) {
-
-            error("Found that \"starting-lives.min\" is greater than \"starting-lives.max\". The minimum value can't be greater than the maximum value, so this plugin is being disabled.");
-            return false;
-
-        }
-        if(checkBooleanOption("hardcore-hearts")) return false;
-        if(checkBooleanOption("force-hard-difficulty")) return false;
-        if(checkIntOption("lives-limit", 0)) return false;
+        if(!OptionValidations.checkMinMaxIntOption("starting-lives", 1, this)) return false;
+        if(!OptionValidations.checkBooleanOption("hardcore-hearts", this)) return false;
+        if(!OptionValidations.checkBooleanOption("force-hard-difficulty", this)) return false;
+        if(!OptionValidations.checkIntOption("lives-limit", 0, this)) return false;
         if(this.getConfig().getInt("starting-lives.min", 3) > this.getConfig().getInt("lives-limit", 5)) {
-
-            error("Found that \"starting-lives.min\" is greater than \"lives-limit\". Players can't start with a life count above the limit, so this plugin is being disabled.");
+            this.error("Found that \"starting-lives.min\" is greater than \"lives-limit\". Players can't start with a life count above the limit, so this plugin is being disabled.");
             return false;
-
         }
         if(this.getConfig().getInt("starting-lives.max", 3) > this.getConfig().getInt("lives-limit", 5)) {
-
-            error("Found that \"starting-lives.max\" is greater than \"lives-limit\". Players can't start with a life count above the limit, so this plugin is being disabled.");
+            this.error("Found that \"starting-lives.max\" is greater than \"lives-limit\". Players can't start with a life count above the limit, so this plugin is being disabled.");
             return false;
-
         }
-        if(checkBooleanOption("players-can-be-generous")) return false;
-        if(checkBooleanOption("lightning-strike-on-last-death")) return false;
-        if(checkBooleanOption("sacrifices-for-revival")) return false;
-        if(checkBooleanOption("players-can-give-away-last-life")) return false;
-        if(checkBooleanOption("lifesteal.enabled")) return false;
-        if(checkIntOption("lifesteal.max-lives-to-steal", 1)) return false;
+        if(!OptionValidations.checkBooleanOption("players-can-be-generous", this)) return false;
+        if(!OptionValidations.checkBooleanOption("lightning-strike-on-last-death", this)) return false;
+        if(!OptionValidations.checkBooleanOption("sacrifices-for-revival", this)) return false;
+        if(!OptionValidations.checkBooleanOption("players-can-give-away-last-life", this)) return false;
+        if(!OptionValidations.checkBooleanOption("lifesteal.enabled", this)) return false;
+        if(!OptionValidations.checkIntOption("lifesteal.max-lives-to-steal", 1, this)) return false;
         if(this.getConfig().getInt("lifesteal.max-lives-to-steal", 2) > this.getConfig().getInt("lives-limit", 5)) {
-
-            error("Found that \"lifesteal.max-lives-to-steal\" is greater than \"lives-limit\". Players can't have a life count above the limit, so this plugin is being disabled.");
+            this.error("Found that \"lifesteal.max-lives-to-steal\" is greater than \"lives-limit\". Players can't have a life count above the limit, so this plugin is being disabled.");
             return false;
-
         }
-        if(checkIntOption("lifesteal.min-lives-to-be-robbed", 1)) return false;
+        if(!OptionValidations.checkIntOption("lifesteal.min-lives-to-be-robbed", 1, this)) return false;
         if(this.getConfig().getInt("lifesteal.min-lives-to-be-robbed", 4) > this.getConfig().getInt("lives-limit", 5)) {
-
-            error("Found that \"lifesteal.min-lives-to-be-robbed\" is greater than \"lives-limit\". Players can't have a life count above the limit, so this plugin is being disabled.");
+            this.error("Found that \"lifesteal.min-lives-to-be-robbed\" is greater than \"lives-limit\". Players can't have a life count above the limit, so this plugin is being disabled.");
             return false;
-
         }
         return true;
-
-    }
-
-    private boolean checkIntOption(String path, int min) {
-
-        Object value = this.getConfig().get(path);
-        if(value != null) {
-
-            if(!isInt(value.toString())) {
-
-                error("Found that \"" + path + "\" has been set to a value that is not a number. This plugin is being disabled.");
-                return true;
-
-            }
-            if(this.getConfig().getInt(path) < min) {
-
-                error("Found that \"" + path + "\" has been set to a value that is less than " + min + ". This plugin is being disabled.");
-                return true;
-
-            }
-
-        }
-        return false;
-
-    }
-
-    private boolean checkBooleanOption(String path) {
-
-        Object value = this.getConfig().get(path);
-        if(value != null)
-            if(!isBoolean(value.toString())) {
-
-                error("Found that \"" + path + "\" has been set to a value that is not true or false. This plugin is being disabled.");
-                return true;
-
-            }
-        return false;
-
     }
 
     private void registerCommands() {
+        setUpCommand(Objects.requireNonNull(this.getCommand("lives")), new LivesCommand(this));
+        setUpCommand(Objects.requireNonNull(this.getCommand("setlives")), new SetLivesCommand(this));
+        setUpCommand(Objects.requireNonNull(this.getCommand("addlife")), new AddLifeCommand(this));
+        setUpCommand(Objects.requireNonNull(this.getCommand("givelife")), new GiveLifeCommand(this));
+        setUpCommand(Objects.requireNonNull(this.getCommand("revive")), new ReviveCommand(this));
+    }
 
-        PluginCommand livesCommand = Objects.requireNonNull(this.getCommand("lives"));
-        TabExecutor livesExecutor = new LivesCommand(this);
-        livesCommand.setExecutor(livesExecutor);
-        livesCommand.setTabCompleter(livesExecutor);
-        PluginCommand setLivesCommand = Objects.requireNonNull(this.getCommand("setlives"));
-        TabExecutor setLivesExecutor = new SetLivesCommand(this);
-        setLivesCommand.setExecutor(setLivesExecutor);
-        setLivesCommand.setTabCompleter(setLivesExecutor);
-        PluginCommand addLifeCommand = Objects.requireNonNull(this.getCommand("addlife"));
-        TabExecutor addLifeExecutor = new AddLifeCommand(this);
-        addLifeCommand.setExecutor(addLifeExecutor);
-        addLifeCommand.setTabCompleter(addLifeExecutor);
-        PluginCommand giveLifeCommand = Objects.requireNonNull(this.getCommand("givelife"));
-        TabExecutor giveLifeExecutor = new GiveLifeCommand(this);
-        giveLifeCommand.setExecutor(giveLifeExecutor);
-        giveLifeCommand.setTabCompleter(giveLifeExecutor);
-        PluginCommand reviveCommand = Objects.requireNonNull(this.getCommand("revive"));
-        TabExecutor reviveExecutor = new ReviveCommand(this);
-        reviveCommand.setExecutor(reviveExecutor);
-        reviveCommand.setTabCompleter(reviveExecutor);
-
+    private void setUpCommand(PluginCommand command, TabExecutor tabExecutor) {
+        command.setExecutor(tabExecutor);
+        command.setTabCompleter(tabExecutor);
     }
 
     private void populateLifeData() {
-
         Map<UUID, Integer> lives = new HashMap<>();
-        ConfigurationSection section = livesFile.getConfig().getConfigurationSection("lives");
+        ConfigurationSection section = this.livesFile.getConfig().getConfigurationSection("lives");
         if(section != null)
             section.getKeys(false).forEach(key -> {
-
-                if(isUUID(key))
+                if(TypeChecks.isUUID(key))
                     lives.put(UUID.fromString(key), Math.max(section.getInt(key), 0));
-
             });
         this.lifeData = new LifeData(lives, this.options.livesLimit());
-
-    }
-
-    /**
-     * Returns the official list of add-ons, retrieved from <a href=
-     * "https://raw.githubusercontent.com/ManosSef/SemiHardcoreAddonList/main/addons.json">this</a> GitHub page, in the
-     * form of a {@code JsonReader}.
-     *
-     * @return The official add-on list.
-     */
-    public JsonReader getOfficialAddonList() {
-
-        try {
-
-            URL addonList = new URL("https://raw.githubusercontent.com/ManosSef/SemiHardcoreAddonList/main/addons.json");
-            InputStream stream = addonList.openStream();
-            Scanner scan = new Scanner(stream);
-            StringBuilder jsonString = new StringBuilder();
-            while(scan.hasNextLine()) {
-
-                jsonString.append(scan.nextLine());
-
-            }
-            scan.close();
-            Gson gson = new Gson();
-            return gson.newJsonReader(new StringReader(jsonString.toString()));
-
-        } catch(IOException e) {
-
-            this.getLogger().log(Level.WARNING, "Failed to retrieve official add-on list!");
-            return null;
-
-        }
-
-    }
-
-    private void checkUpdates() {
-
-        try {
-
-            UpdateChecker baseUpdateChecker = new UpdateChecker(this, 95152, "semihardcore");
-            baseUpdateChecker.checkForUpdates();
-            JsonReader json = this.getOfficialAddonList();
-            this.addonsToBeChecked = new HashMap<>();
-            json.beginArray();
-            while(json.hasNext()) {
-
-                UpdateChecker optional = this.getCheckerForAddon(json);
-                if(optional != null) {
-
-                    this.addonsToBeChecked.put(optional.getPluginName(), optional);
-
-                }
-
-            }
-            json.endArray();
-
-        } catch(Exception e) {
-
-            this.getLogger().log(Level.WARNING, "Failed to check SemiHardcore and its add-ons for updates!");
-
-        }
-
-    }
-
-    private UpdateChecker getCheckerForAddon(JsonReader json) throws IOException {
-
-        String name = null;
-        int resourceId = -1;
-        String resourceWebName = null;
-        json.beginObject();
-        while(json.hasNext()) {
-
-            String tag = json.nextName();
-            switch(tag) {
-
-                case "name" -> name = json.nextString();
-                case "resource_id" -> resourceId = json.nextInt();
-                case "resource_web_name" -> resourceWebName = json.nextString();
-                default -> json.skipValue();
-
-            }
-
-        }
-        json.endObject();
-        if(name == null)
-            return null;
-        Plugin plugin = Bukkit.getPluginManager().getPlugin(name);
-        if(plugin != null)
-            return new UpdateChecker(plugin, resourceId, resourceWebName);
-        else
-            return null;
-
-    }
-
-    /**
-     * Checks if the given add-on is yet to be checked for updates.
-     *
-     * @param name The add-on's name.
-     * @return {@code true} if the add-on is yet to be checked, {@code false} otherwise.
-     */
-    public boolean isAddonToBeChecked(String name) {
-
-        return this.addonsToBeChecked.containsKey(name);
-
-    }
-
-    /**
-     * Checks the given add-on for updates.
-     *
-     * @param name The add-on's name.
-     */
-    public void checkAddonForUpdates(String name) {
-
-        if(isAddonToBeChecked(name)) {
-
-            this.addonsToBeChecked.get(name).checkForUpdates();
-
-        }
-        this.addonsToBeChecked.remove(name);
-
     }
 
     /**
      * Returns the plugin's configuration options, as an {@link Options} object.
-     *
      * @return The plugin's options.
      */
     public Options getOptions() {
-
-        return options;
-
+        return this.options;
     }
 
     /**
      * Returns the plugin's message configuration, as a {@link Messages} object.
-     *
      * @return The plugin's messages.
      */
     public Messages getMessages() {
-
-        return messages;
-
+        return this.messages;
     }
 
     /**
      * Returns the internal life data.
-     *
      * @return The plugin's life data.
      */
     protected LifeData getLifeData() {
-
-        return lifeData;
-
+        return this.lifeData;
     }
 
     /**
      * Returns the plugin's instance of {@link LifeChanges}, the class that is responsible for every change in any
      * player's life count or death status, as well as a lot of the plugin's messages.
-     *
      * @return The plugin's instance of {@link LifeChanges}.
      */
     public LifeChanges getLifeChanges() {
-
-        return lifeChanges;
-
+        return this.lifeChanges;
     }
 
     /**
      * Returns the lives.yml file as a {@link SemiHardcoreYmlFile}.
-     *
      * @return The lives.yml file data.
      */
     public SemiHardcoreYmlFile getLivesFile() {
-
-        return livesFile;
-
-    }
-
-    /**
-     * Returns the deadPlayers.yml file as a {@link SemiHardcoreYmlFile}.
-     *
-     * @return The deadPlayers.yml file data.
-     * @deprecated The deadPlayers.yml file has been removed.
-     */
-    @Deprecated(since = "2.7.0", forRemoval = true)
-    public SemiHardcoreYmlFile getDeadPlayersFile() {
-
-        throw new UnsupportedOperationException("The deadPlayers.yml file has been removed");
-
+        return this.livesFile;
     }
 
     /**
      * Returns the messages.yml file as a {@link SemiHardcoreYmlFile}.
-     *
      * @return The messages.yml file data.
      */
     public SemiHardcoreYmlFile getMessagesFile() {
-
-        return messagesFile;
-
+        return this.messagesFile;
     }
 
     private void error(String message) {
-
-        this.getLogger().log(Level.SEVERE, message);
+        this.getLogger().severe(message);
         this.getServer().getPluginManager().disablePlugin(this);
-
     }
-
-    private boolean isInt(String input) {
-
-        try {
-
-            Integer.parseInt(input);
-            return true;
-
-        } catch(Exception e) {
-
-            return false;
-
-        }
-
-    }
-
-    private boolean isUUID(String input) {
-
-        try {
-
-            UUID.fromString(input);
-            return true;
-
-        } catch(Exception e) {
-
-            return false;
-
-        }
-
-    }
-
-    private boolean isBoolean(String input) {
-
-        return (input.equalsIgnoreCase("true") || input.equalsIgnoreCase("false"));
-
-    }
-
 }
