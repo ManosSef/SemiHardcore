@@ -2,6 +2,7 @@ package me.manossef.semihardcore.data;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,6 +54,7 @@ public record Options(int startingLivesMin, int startingLivesMax, boolean hardco
      * @param file The config.yml file configuration.
      */
     public void saveToFile(FileConfiguration file) {
+        List<String> comments = file.getComments("");
         file.set("starting-lives.min", this.startingLivesMin);
         file.set("starting-lives.max", this.startingLivesMax);
         file.set("hardcore-hearts", this.hardcoreHearts);
@@ -65,5 +67,6 @@ public record Options(int startingLivesMin, int startingLivesMax, boolean hardco
         file.set("lifesteal.enabled", this.lifestealEnabled);
         file.set("lifesteal.max-lives-to-steal", this.maxLivesToLifesteal);
         file.set("lifesteal.min-lives-to-be-robbed", this.minLivesToBeLiferobbed);
+        file.setComments("", comments);
     }
 }
