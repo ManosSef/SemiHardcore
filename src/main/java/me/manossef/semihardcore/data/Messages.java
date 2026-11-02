@@ -1,6 +1,6 @@
 package me.manossef.semihardcore.data;
 
-import me.manossef.semihardcore.files.SemiHardcoreYmlFile;
+import me.manossef.api.alexandria.files.YamlFile;
 import org.bukkit.configuration.file.FileConfiguration;
 
 /**
@@ -217,11 +217,9 @@ public class Messages {
      * player.
      */
     public final String reviveSuccess;
-    private final SemiHardcoreYmlFile messagesFile;
+    private final YamlFile messagesFile;
 
-    public Messages(SemiHardcoreYmlFile messagesFile) {
-
-        super();
+    public Messages(YamlFile messagesFile) {
         this.messagesFile = messagesFile;
         FileConfiguration messages = messagesFile.getConfig();
         this.welcomeConstant = messages.getString("welcome-message.constant",
@@ -282,7 +280,6 @@ public class Messages {
         this.setlivesSuccess = messages.getString("setlives-command-messages.success", "&aSet %player%'s lives to %lives%.");
         this.reviveAlivePlayer = messages.getString("revive-command-messages.alive-player", "&cThat player is alive.");
         this.reviveSuccess = messages.getString("revive-command-messages.success", "&aRevived %player%.");
-
     }
 
     /**

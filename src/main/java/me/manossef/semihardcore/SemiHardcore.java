@@ -3,13 +3,13 @@ package me.manossef.semihardcore;
 import me.manossef.alexandria.Alexandria;
 import me.manossef.api.alexandria.TypeChecks;
 import me.manossef.api.alexandria.config.OptionValidations;
+import me.manossef.api.alexandria.files.YamlFile;
 import me.manossef.api.alexandria.updates.SpigotMCUpdateChecker;
 import me.manossef.semihardcore.commands.*;
 import me.manossef.semihardcore.data.LifeData;
 import me.manossef.semihardcore.data.Messages;
 import me.manossef.semihardcore.data.Options;
 import me.manossef.semihardcore.data.Placeholders;
-import me.manossef.semihardcore.files.SemiHardcoreYmlFile;
 import me.manossef.semihardcore.listeners.Listeners;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
@@ -33,8 +33,8 @@ import java.util.logging.Level;
  * make sure the plugin is correct, and also so that the various resources contained in this class can be used.
  */
 public class SemiHardcore extends JavaPlugin {
-    private SemiHardcoreYmlFile livesFile;
-    private SemiHardcoreYmlFile messagesFile;
+    private YamlFile livesFile;
+    private YamlFile messagesFile;
     private LifeChanges lifeChanges;
     private Options options;
     private Messages messages;
@@ -59,8 +59,8 @@ public class SemiHardcore extends JavaPlugin {
             this.error("SemiHardcore has dropped support for versions below 1.17. This server is running a Minecraft version below 1.17, so this plugin is being disabled.");
             return;
         }
-        this.livesFile = new SemiHardcoreYmlFile(this, "lives.yml");
-        this.messagesFile = new SemiHardcoreYmlFile(this, "messages.yml");
+        this.livesFile = new YamlFile(this, "lives.yml");
+        this.messagesFile = new YamlFile(this, "messages.yml");
         File deadPlayersFile = new File(this.getDataFolder().toPath() + "/deadPlayers.yml");
         if(deadPlayersFile.exists()) {
             this.getLogger().log(Level.INFO, "Found legacy deadPlayers.yml file. Deleting.");
@@ -81,7 +81,7 @@ public class SemiHardcore extends JavaPlugin {
                 "Look, I don't want to sound mean, and I appreciate you liking my plugin this much, but why the heck would you set the starting lives or the life limit to 1? You can do that without this plugin, by turning on hardcore!");
         this.messages = new Messages(this.messagesFile);
         this.populateLifeData();
-        this.makeWorldsHard();
+        if(this.options.forceHardDifficulty()) this.makeWorldsHard();
         this.makeWorldsHardcoreHearts(this.options.hardcoreHearts());
         this.getServer().getPluginManager().registerEvents(new Listeners(this), this);
         this.registerCommands();
@@ -113,7 +113,7 @@ public class SemiHardcore extends JavaPlugin {
             this.livesFile.saveConfig();
         } catch(Exception ignored) {
         }
-        this.makeWorldsHardcoreHearts(false);
+        this.makeWorldsHardcoreHearts(this.getServer().isHardcore());
     }
 
     /**
@@ -129,8 +129,6 @@ public class SemiHardcore extends JavaPlugin {
     }
 
     private void makeWorldsHard() {
-        if(!this.getConfig().getBoolean("force-hard-difficulty"))
-            return;
         Bukkit.getWorlds().forEach(world -> world.setDifficulty(Difficulty.HARD));
     }
 
@@ -223,18 +221,18 @@ public class SemiHardcore extends JavaPlugin {
     }
 
     /**
-     * Returns the lives.yml file as a {@link SemiHardcoreYmlFile}.
+     * Returns the lives.yml file as a {@link YamlFile}.
      * @return The lives.yml file data.
      */
-    public SemiHardcoreYmlFile getLivesFile() {
+    public YamlFile getLivesFile() {
         return this.livesFile;
     }
 
     /**
-     * Returns the messages.yml file as a {@link SemiHardcoreYmlFile}.
+     * Returns the messages.yml file as a {@link YamlFile}.
      * @return The messages.yml file data.
      */
-    public SemiHardcoreYmlFile getMessagesFile() {
+    public YamlFile getMessagesFile() {
         return this.messagesFile;
     }
 
