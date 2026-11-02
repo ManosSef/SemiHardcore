@@ -1,6 +1,7 @@
 package me.manossef.semihardcore.data;
 
 import me.manossef.api.alexandria.files.YamlFile;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 
 /**
@@ -9,7 +10,6 @@ import org.bukkit.configuration.file.FileConfiguration;
  * plugin.
  */
 public class Messages {
-
     /**
      * Message "welcome-message.constant". Appears when a player joins the server for the first time, and the minimum
      * and maximum starting lives are the name number.
@@ -283,12 +283,20 @@ public class Messages {
     }
 
     /**
+     * Formats the provided string as if by {@link ChatColor#translateAlternateColorCodes(char, String)} with
+     * <code>'&'</code> as the <code>altColorChar</code> and returns the final string.
+     * @param message The string to format.
+     * @return The message with alternate color codes translated.
+     */
+    public static String color(String message) {
+        return ChatColor.translateAlternateColorCodes('&', message);
+    }
+
+    /**
      * Saves the messages to the messages.yml file.
-     *
      * @param file The messages.yml file configuration.
      */
     public void saveToFile(FileConfiguration file) {
-
         file.set("welcome-message.constant", this.welcomeConstant);
         file.set("welcome-message.range", this.welcomeRange);
         file.set("lives-message.plural", this.livesPlural);
@@ -342,71 +350,43 @@ public class Messages {
         file.set("setlives-command-messages.success", this.setlivesSuccess);
         file.set("revive-command-messages.alive-player", this.reviveAlivePlayer);
         file.set("revive-command-messages.success", this.reviveSuccess);
-
     }
 
     private String commandUnspecifiedPlayer() {
-
-        FileConfiguration messages = messagesFile.getConfig();
-        if(messages.getString("givelife-command-errors.unspecified-player") != null) {
-
+        FileConfiguration messages = this.messagesFile.getConfig();
+        if(messages.getString("givelife-command-errors.unspecified-player") != null)
             return messages.getString("givelife-command-errors.unspecified-player");
-
-        } else if(messages.getString("addlife-command-messages.unspecified-player") != null) {
-
+        else if(messages.getString("addlife-command-messages.unspecified-player") != null)
             return messages.getString("addlife-command-messages.unspecified-player");
-
-        } else if(messages.getString("setlives-command-messages.unspecified-player") != null) {
-
+        else if(messages.getString("setlives-command-messages.unspecified-player") != null)
             return messages.getString("setlives-command-messages.unspecified-player");
-
-        } else if(messages.getString("revive-command-messages.unspecified-player") != null) {
-
+        else if(messages.getString("revive-command-messages.unspecified-player") != null)
             return messages.getString("revive-command-messages.unspecified-player");
-
-        } else
+        else
             return messages.getString("command-messages.unspecified-player", "&cYou need to specify a player.");
-
     }
 
     private String commandNotFound() {
-
-        FileConfiguration messages = messagesFile.getConfig();
-        if(messages.getString("givelife-command-errors.not-found") != null) {
-
+        FileConfiguration messages = this.messagesFile.getConfig();
+        if(messages.getString("givelife-command-errors.not-found") != null)
             return messages.getString("givelife-command-errors.not-found");
-
-        } else if(messages.getString("addlife-command-messages.not-found") != null) {
-
+        else if(messages.getString("addlife-command-messages.not-found") != null)
             return messages.getString("addlife-command-messages.not-found");
-
-        } else if(messages.getString("setlives-command-messages.not-found") != null) {
-
+        else if(messages.getString("setlives-command-messages.not-found") != null)
             return messages.getString("setlives-command-messages.not-found");
-
-        } else if(messages.getString("revive-command-messages.not-found") != null) {
-
+        else if(messages.getString("revive-command-messages.not-found") != null)
             return messages.getString("revive-command-messages.not-found");
-
-        } else
+        else
             return messages.getString("command-messages.not-found", "&cPlayer not found.");
-
     }
 
     private String commandCannotRevive() {
-
-        FileConfiguration messages = messagesFile.getConfig();
-        if(messages.getString("addlife-command-messages.cannot-revive") != null) {
-
+        FileConfiguration messages = this.messagesFile.getConfig();
+        if(messages.getString("addlife-command-messages.cannot-revive") != null)
             return messages.getString("addlife-command-messages.cannot-revive");
-
-        } else if(messages.getString("setlives-command-messages.cannot-revive") != null) {
-
+        else if(messages.getString("setlives-command-messages.cannot-revive") != null)
             return messages.getString("setlives-command-messages.cannot-revive");
-
-        } else
+        else
             return messages.getString("command-messages.cannot-revive", "&cPlease use the /revive command to revive players.");
-
     }
-
 }

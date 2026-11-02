@@ -2,6 +2,7 @@ package me.manossef.semihardcore;
 
 import me.manossef.alexandria.Alexandria;
 import me.manossef.api.alexandria.TypeChecks;
+import me.manossef.api.alexandria.commands.TabCompletions;
 import me.manossef.api.alexandria.config.OptionValidations;
 import me.manossef.api.alexandria.files.YamlFile;
 import me.manossef.api.alexandria.updates.SpigotMCUpdateChecker;
@@ -14,8 +15,9 @@ import me.manossef.semihardcore.listeners.Listeners;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.command.TabExecutor;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -119,10 +121,55 @@ public class SemiHardcore extends JavaPlugin {
     }
 
     /**
-     * Returns whether the Minecraft version the server is running is unsupported by the plugin. If the plugin has been successfully enabled, this can only return {@code false}.
-     * @return {@code false}.
+     * Returns the plugin's configuration options, as an {@link Options} object.
+     * @return The plugin's options.
      */
-    public static boolean isUnsupportedVersion() {
+    public Options getOptions() {
+        return this.options;
+    }
+
+    /**
+     * Returns the plugin's message configuration, as a {@link Messages} object.
+     * @return The plugin's messages.
+     */
+    public Messages getMessages() {
+        return this.messages;
+    }
+
+    /**
+     * Returns the plugin's instance of {@link LifeChanges}, the class that is responsible for every change in any
+     * player's life count or death status, as well as a lot of the plugin's messages.
+     * @return The plugin's instance of {@link LifeChanges}.
+     */
+    public LifeChanges getLifeChanges() {
+        return this.lifeChanges;
+    }
+
+    /**
+     * Returns the lives.yml file as a {@link YamlFile}.
+     * @return The lives.yml file data.
+     */
+    public YamlFile getLivesFile() {
+        return this.livesFile;
+    }
+
+    /**
+     * Returns the messages.yml file as a {@link YamlFile}.
+     * @return The messages.yml file data.
+     */
+    public YamlFile getMessagesFile() {
+        return this.messagesFile;
+    }
+
+    /**
+     * Returns the internal life data.
+     * @return The plugin's life data.
+     */
+    protected LifeData getLifeData() {
+        return this.lifeData;
+    }
+
+    private boolean isUnsupportedVersion() {
         return !Arrays.stream(Material.values()).map(Material::toString).toList().contains("DRIPSTONE_BLOCK");
     }
 
@@ -166,16 +213,16 @@ public class SemiHardcore extends JavaPlugin {
     }
 
     private void registerCommands() {
-        setUpCommand(Objects.requireNonNull(this.getCommand("lives")), new LivesCommand(this));
-        setUpCommand(Objects.requireNonNull(this.getCommand("setlives")), new SetLivesCommand(this));
-        setUpCommand(Objects.requireNonNull(this.getCommand("addlife")), new AddLifeCommand(this));
-        setUpCommand(Objects.requireNonNull(this.getCommand("givelife")), new GiveLifeCommand(this));
-        setUpCommand(Objects.requireNonNull(this.getCommand("revive")), new ReviveCommand(this));
+        setUpCommand(Objects.requireNonNull(this.getCommand("lives")), new LivesCommand(this), TabCompletions.none());
+        setUpCommand(Objects.requireNonNull(this.getCommand("setlives")), new SetLivesCommand(this), TabCompletions.completers(TabCompletions.players(), TabCompletions.literals("1", "2", "3", "4", "5")));
+        setUpCommand(Objects.requireNonNull(this.getCommand("addlife")), new AddLifeCommand(this), TabCompletions.playersAtFirst());
+        setUpCommand(Objects.requireNonNull(this.getCommand("givelife")), new GiveLifeCommand(this), TabCompletions.playersAtFirst());
+        setUpCommand(Objects.requireNonNull(this.getCommand("revive")), new ReviveCommand(this), TabCompletions.playersAtFirst());
     }
 
-    private void setUpCommand(PluginCommand command, TabExecutor tabExecutor) {
-        command.setExecutor(tabExecutor);
-        command.setTabCompleter(tabExecutor);
+    private void setUpCommand(PluginCommand command, CommandExecutor executor, TabCompleter tabCompleter) {
+        command.setExecutor(executor);
+        command.setTabCompleter(tabCompleter);
     }
 
     private void populateLifeData() {
@@ -187,55 +234,6 @@ public class SemiHardcore extends JavaPlugin {
                     lives.put(UUID.fromString(key), Math.max(section.getInt(key), 0));
             });
         this.lifeData = new LifeData(lives, this.options.livesLimit());
-    }
-
-    /**
-     * Returns the plugin's configuration options, as an {@link Options} object.
-     * @return The plugin's options.
-     */
-    public Options getOptions() {
-        return this.options;
-    }
-
-    /**
-     * Returns the plugin's message configuration, as a {@link Messages} object.
-     * @return The plugin's messages.
-     */
-    public Messages getMessages() {
-        return this.messages;
-    }
-
-    /**
-     * Returns the internal life data.
-     * @return The plugin's life data.
-     */
-    protected LifeData getLifeData() {
-        return this.lifeData;
-    }
-
-    /**
-     * Returns the plugin's instance of {@link LifeChanges}, the class that is responsible for every change in any
-     * player's life count or death status, as well as a lot of the plugin's messages.
-     * @return The plugin's instance of {@link LifeChanges}.
-     */
-    public LifeChanges getLifeChanges() {
-        return this.lifeChanges;
-    }
-
-    /**
-     * Returns the lives.yml file as a {@link YamlFile}.
-     * @return The lives.yml file data.
-     */
-    public YamlFile getLivesFile() {
-        return this.livesFile;
-    }
-
-    /**
-     * Returns the messages.yml file as a {@link YamlFile}.
-     * @return The messages.yml file data.
-     */
-    public YamlFile getMessagesFile() {
-        return this.messagesFile;
     }
 
     private void error(String message) {
