@@ -70,7 +70,7 @@ public class SemiHardcore extends JavaPlugin {
         this.lifeChanges = new LifeChanges(this);
         if(!this.validateOptions()) return;
         this.options = new Options(this.getConfig().getInt("starting-lives.min", 3), this.getConfig().getInt("starting-lives.max", 3),
-            this.getConfig().getBoolean("hardcore-hearts", true), this.getConfig().getBoolean("force-hard-difficulty", true),
+            this.getConfig().getBoolean("hardcore-hearts", false), this.getConfig().getBoolean("force-hard-difficulty", true),
             this.getConfig().getInt("lives-limit", 5), this.getConfig().getBoolean("players-can-be-generous", true),
             this.getConfig().getBoolean("lightning-strike-on-last-death", false), this.getConfig().getBoolean("sacrifices-for-revival", false),
             this.getConfig().getBoolean("players-can-give-away-last-life", false), this.getConfig().getBoolean("lifesteal.enabled", false),
