@@ -80,10 +80,14 @@ public class SemiHardcore extends JavaPlugin {
             this.getLogger().log(Level.INFO,
                 "Look, I don't want to sound mean, and I appreciate you liking my plugin this much, but why the heck would you set the starting lives or the life limit to 1? You can do that without this plugin, by turning on hardcore!");
         this.saveDefaultConfig();
+        this.options.saveToFile(this.getConfig());
+        this.saveConfig();
         this.livesFile = new YamlFile(this, "lives.yml");
         this.messagesFile = new YamlFile(this, "messages.yml");
         this.messages = new Messages(this.messagesFile);
         this.messagesFile.saveDefaultConfig();
+        this.messages.saveToFile(this.messagesFile.getConfig());
+        this.messagesFile.saveConfig();
         this.populateLifeData();
         if(this.options.forceHardDifficulty()) this.makeWorldsHard();
         this.makeWorldsHardcoreHearts(this.options.hardcoreHearts());
@@ -109,10 +113,6 @@ public class SemiHardcore extends JavaPlugin {
         if(isUnsupportedVersion())
             return;
         try {
-            this.options.saveToFile(this.getConfig());
-            this.saveConfig();
-            this.messages.saveToFile(this.messagesFile.getConfig());
-            this.messagesFile.saveConfig();
             this.lifeData.saveToFile(this.livesFile.getConfig());
             this.livesFile.saveConfig();
         } catch(Exception ignored) {
