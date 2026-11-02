@@ -59,8 +59,6 @@ public class SemiHardcore extends JavaPlugin {
             this.error("SemiHardcore has dropped support for versions below 1.17. This server is running a Minecraft version below 1.17, so this plugin is being disabled.");
             return;
         }
-        this.livesFile = new YamlFile(this, "lives.yml");
-        this.messagesFile = new YamlFile(this, "messages.yml");
         File deadPlayersFile = new File(this.getDataFolder().toPath() + "/deadPlayers.yml");
         if(deadPlayersFile.exists()) {
             this.getLogger().log(Level.INFO, "Found legacy deadPlayers.yml file. Deleting.");
@@ -79,7 +77,11 @@ public class SemiHardcore extends JavaPlugin {
         if(((this.options.startingLivesMin() == 1 && this.options.startingLivesMax() == 1) || (this.options.livesLimit() == 1)) && !this.getServer().isHardcore())
             this.getLogger().log(Level.INFO,
                 "Look, I don't want to sound mean, and I appreciate you liking my plugin this much, but why the heck would you set the starting lives or the life limit to 1? You can do that without this plugin, by turning on hardcore!");
+        this.saveDefaultConfig();
+        this.livesFile = new YamlFile(this, "lives.yml");
+        this.messagesFile = new YamlFile(this, "messages.yml");
         this.messages = new Messages(this.messagesFile);
+        this.messagesFile.saveDefaultConfig();
         this.populateLifeData();
         if(this.options.forceHardDifficulty()) this.makeWorldsHard();
         this.makeWorldsHardcoreHearts(this.options.hardcoreHearts());
