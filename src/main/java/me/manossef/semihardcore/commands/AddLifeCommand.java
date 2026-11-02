@@ -20,24 +20,24 @@ public class AddLifeCommand implements CommandExecutor {
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if(args.length == 0) {
-            sender.sendMessage(Messages.color(plugin.getMessages().commandUnspecifiedPlayer));
+            sender.sendMessage(Messages.color(plugin.getMessages().commandUnspecifiedPlayer()));
             return true;
         }
         Player player = Bukkit.getPlayer(args[0]);
         if(player == null) {
-            sender.sendMessage(Messages.color(plugin.getMessages().commandNotFound));
+            sender.sendMessage(Messages.color(plugin.getMessages().commandNotFound()));
             return true;
         }
         if(plugin.getLifeChanges().getLives(player) == 0) {
-            sender.sendMessage(Messages.color(plugin.getMessages().commandCannotRevive));
+            sender.sendMessage(Messages.color(plugin.getMessages().commandCannotRevive()));
             return true;
         }
         int currentCount = plugin.getLifeChanges().getLives(player);
         plugin.getLifeChanges().addLife(player);
         int newCount = plugin.getLifeChanges().getLives(player);
         plugin.getLifeChanges().livesMessage(player);
-        sender.sendMessage(currentCount == newCount ? Messages.color(plugin.getMessages().addlifeLivesLimitHit.replace("%player%", args[0]))
-            : Messages.color(plugin.getMessages().addlifeSuccess.replace("%player%", args[0])));
+        sender.sendMessage(currentCount == newCount ? Messages.color(plugin.getMessages().addlifeLivesLimitHit().replace("%player%", args[0]))
+            : Messages.color(plugin.getMessages().addlifeSuccess().replace("%player%", args[0])));
         return true;
     }
 }

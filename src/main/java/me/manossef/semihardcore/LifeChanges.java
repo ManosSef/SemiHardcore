@@ -184,8 +184,8 @@ public class LifeChanges {
         player.setSaturation(20);
         player.setGameMode(GameMode.SURVIVAL);
         player.playEffect(EntityEffect.TOTEM_RESURRECT);
-        sendTitle(player, Messages.color(plugin.getMessages().reviveTitle));
-        player.sendMessage(Messages.color(plugin.getMessages().revive.replace("%lives%", Integer.toString(this.getLives(player)))));
+        sendTitle(player, Messages.color(plugin.getMessages().reviveTitle()));
+        player.sendMessage(Messages.color(plugin.getMessages().revive().replace("%lives%", Integer.toString(this.getLives(player)))));
     }
 
     /**
@@ -202,11 +202,11 @@ public class LifeChanges {
      */
     public void livesMessage(Player player) {
         if(this.getLives(player) == 1)
-            player.sendMessage(Messages.color(plugin.getMessages().livesSingular.replace("%lives%", Integer.toString(this.getLives(player)))));
+            player.sendMessage(Messages.color(plugin.getMessages().livesSingular().replace("%lives%", Integer.toString(this.getLives(player)))));
         else if(this.getLives(player) > 1)
-            player.sendMessage(Messages.color(plugin.getMessages().livesPlural.replace("%lives%", Integer.toString(this.getLives(player)))));
+            player.sendMessage(Messages.color(plugin.getMessages().livesPlural().replace("%lives%", Integer.toString(this.getLives(player)))));
         else
-            player.sendMessage(Messages.color(plugin.getMessages().livesNone.replace("%lives%", Integer.toString(this.getLives(player)))));
+            player.sendMessage(Messages.color(plugin.getMessages().livesNone().replace("%lives%", Integer.toString(this.getLives(player)))));
     }
 
     /**
@@ -215,15 +215,15 @@ public class LifeChanges {
      * @param donor The player to be shown as the donor.
      */
     public void livesMessageAfterGenerosity(Player player, Player donor) {
-        this.sendTitle(player, Messages.color(plugin.getMessages().livesTitleAfterDonation));
+        this.sendTitle(player, Messages.color(plugin.getMessages().livesTitleAfterDonation()));
         if(this.getLives(player) == 1)
-            player.sendMessage(Messages.color(plugin.getMessages().livesAfterDonationSingular.replace("%lives%", Integer.toString(this.getLives(player)))
+            player.sendMessage(Messages.color(plugin.getMessages().livesAfterDonationSingular().replace("%lives%", Integer.toString(this.getLives(player)))
                 .replace("%donor%", donor.getName())));
         else if(this.getLives(player) > 1)
-            player.sendMessage(Messages.color(plugin.getMessages().livesAfterDonationPlural.replace("%lives%", Integer.toString(this.getLives(player)))
+            player.sendMessage(Messages.color(plugin.getMessages().livesAfterDonationPlural().replace("%lives%", Integer.toString(this.getLives(player)))
                 .replace("%donor%", donor.getName())));
          else
-            player.sendMessage(Messages.color(plugin.getMessages().livesAfterDonationNone.replace("%lives%", Integer.toString(this.getLives(player))).replace("%donor%",
+            player.sendMessage(Messages.color(plugin.getMessages().livesAfterDonationNone().replace("%lives%", Integer.toString(this.getLives(player))).replace("%donor%",
                 donor.getName())));
     }
 
@@ -234,13 +234,13 @@ public class LifeChanges {
      */
     public void livesMessageAfterBeingGenerous(Player player, Player receiver) {
         if(this.getLives(player) == 1)
-            player.sendMessage(Messages.color(plugin.getMessages().livesAfterBeingGenerousSingular.replace("%lives%", Integer.toString(this.getLives(player)))
+            player.sendMessage(Messages.color(plugin.getMessages().livesAfterBeingGenerousSingular().replace("%lives%", Integer.toString(this.getLives(player)))
                 .replace("%receiver%", receiver.getName())));
         else if(this.getLives(player) > 1)
-            player.sendMessage(Messages.color(plugin.getMessages().livesAfterBeingGenerousPlural.replace("%lives%", Integer.toString(this.getLives(player)))
+            player.sendMessage(Messages.color(plugin.getMessages().livesAfterBeingGenerousPlural().replace("%lives%", Integer.toString(this.getLives(player)))
                 .replace("%receiver%", receiver.getName())));
         else
-            player.sendMessage(Messages.color(plugin.getMessages().livesAfterBeingGenerousNone.replace("%lives%", Integer.toString(this.getLives(player)))
+            player.sendMessage(Messages.color(plugin.getMessages().livesAfterBeingGenerousNone().replace("%lives%", Integer.toString(this.getLives(player)))
                 .replace("%receiver%", receiver.getName())));
     }
 
@@ -250,12 +250,12 @@ public class LifeChanges {
      */
     public void livesMessageAfterDeath(Player player) {
         if(this.getLives(player) == 1)
-            player.sendMessage(Messages.color(plugin.getMessages().livesAfterDeathSingular.replace("%lives%", Integer.toString(this.getLives(player)))));
+            player.sendMessage(Messages.color(plugin.getMessages().livesAfterDeathSingular().replace("%lives%", Integer.toString(this.getLives(player)))));
         else if(this.getLives(player) > 1)
-            player.sendMessage(Messages.color(plugin.getMessages().livesAfterDeathPlural.replace("%lives%", Integer.toString(this.getLives(player)))));
+            player.sendMessage(Messages.color(plugin.getMessages().livesAfterDeathPlural().replace("%lives%", Integer.toString(this.getLives(player)))));
         else {
-            player.sendMessage(Messages.color(plugin.getMessages().livesAfterDeathNone.replace("%lives%", Integer.toString(this.getLives(player)))));
-            this.sendTitle(player, Messages.color(plugin.getMessages().livesAfterDeathNoneTitle.replace("%lives%", Integer.toString(this.getLives(player)))));
+            player.sendMessage(Messages.color(plugin.getMessages().livesAfterDeathNone().replace("%lives%", Integer.toString(this.getLives(player)))));
+            this.sendTitle(player, Messages.color(plugin.getMessages().livesAfterDeathNoneTitle().replace("%lives%", Integer.toString(this.getLives(player)))));
         }
     }
 
@@ -267,13 +267,13 @@ public class LifeChanges {
      */
     public void livesMessageAfterLifesteal(Player player, Player victim) {
         if(this.getLives(player) == 1)
-            player.sendMessage(Messages.color(plugin.getMessages().livesAfterLifestealSingular.replace("%lives%", Integer.toString(this.getLives(player)))
+            player.sendMessage(Messages.color(plugin.getMessages().livesAfterLifestealSingular().replace("%lives%", Integer.toString(this.getLives(player)))
                 .replace("%victim%", victim.getName())));
         else if(this.getLives(player) > 1)
-            player.sendMessage(Messages.color(plugin.getMessages().livesAfterLifestealPlural.replace("%lives%", Integer.toString(this.getLives(player)))
+            player.sendMessage(Messages.color(plugin.getMessages().livesAfterLifestealPlural().replace("%lives%", Integer.toString(this.getLives(player)))
                 .replace("%victim%", victim.getName())));
         else
-            player.sendMessage(Messages.color(plugin.getMessages().livesAfterLifestealNone.replace("%lives%", Integer.toString(this.getLives(player)))
+            player.sendMessage(Messages.color(plugin.getMessages().livesAfterLifestealNone().replace("%lives%", Integer.toString(this.getLives(player)))
                 .replace("%victim%", victim.getName())));
     }
 
@@ -283,9 +283,9 @@ public class LifeChanges {
      */
     public void welcomeMessage(Player player) {
         if(plugin.getOptions().startingLivesMin() == plugin.getOptions().startingLivesMax())
-            player.sendMessage(Messages.color(plugin.getMessages().welcomeConstant.replace("%lives%", Integer.toString(plugin.getOptions().startingLivesMin()))));
+            player.sendMessage(Messages.color(plugin.getMessages().welcomeConstant().replace("%lives%", Integer.toString(plugin.getOptions().startingLivesMin()))));
         else
-            player.sendMessage(Messages.color(plugin.getMessages().welcomeRange.replace("%min%", Integer.toString(plugin.getOptions().startingLivesMin()))
+            player.sendMessage(Messages.color(plugin.getMessages().welcomeRange().replace("%min%", Integer.toString(plugin.getOptions().startingLivesMin()))
                 .replace("%max%", Integer.toString(plugin.getOptions().startingLivesMax()))
                 .replace("%lives%", Integer.toString(this.getLives(player)))));
     }

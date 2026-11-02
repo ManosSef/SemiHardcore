@@ -34,25 +34,25 @@ public class GiveLifeCommand implements CommandExecutor {
             return true;
         }
         if(!plugin.getOptions().playersCanBeGenerous()) {
-            donor.sendMessage(Messages.color(plugin.getMessages().givelifeDisabled));
+            donor.sendMessage(Messages.color(plugin.getMessages().givelifeDisabled()));
             return true;
         }
         if(args.length == 0) {
-            donor.sendMessage(Messages.color(plugin.getMessages().commandUnspecifiedPlayer));
+            donor.sendMessage(Messages.color(plugin.getMessages().commandUnspecifiedPlayer()));
             return true;
         }
         Player receiver = Bukkit.getPlayer(args[0]);
         if(receiver == null) {
-            donor.sendMessage(Messages.color(plugin.getMessages().commandNotFound));
+            donor.sendMessage(Messages.color(plugin.getMessages().commandNotFound()));
             return true;
         }
         LifeChanges lifeChanges = plugin.getLifeChanges();
         if(receiver == donor) {
-            donor.sendMessage(Messages.color(plugin.getMessages().givelifeSelfReference));
+            donor.sendMessage(Messages.color(plugin.getMessages().givelifeSelfReference()));
             return true;
         }
         if(lifeChanges.getLives(donor) < 1) {
-            donor.sendMessage(Messages.color(plugin.getMessages().givelifeNoLivesLeft));
+            donor.sendMessage(Messages.color(plugin.getMessages().givelifeNoLivesLeft()));
             return true;
         }
         if(lifeChanges.getLives(donor) == 1) {
@@ -69,18 +69,18 @@ public class GiveLifeCommand implements CommandExecutor {
                             lifeChanges.livesMessageAfterBeingGenerous(donor, receiver);
                             return true;
                         }
-                    receiver.sendMessage(Messages.color(plugin.getMessages().givelifeRevivalWarning.replace("%donor%", donor.getName())));
+                    receiver.sendMessage(Messages.color(plugin.getMessages().givelifeRevivalWarning().replace("%donor%", donor.getName())));
                     donor.spigot().sendMessage(
-                        new ComponentBuilder(Messages.color(plugin.getMessages().givelifeSacrificeConfirmation.replace("%receiver%", receiver.getName())))
-                            .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(Messages.color(plugin.getMessages().givelifeSacrificeHover))))
+                        new ComponentBuilder(Messages.color(plugin.getMessages().givelifeSacrificeConfirmation().replace("%receiver%", receiver.getName())))
+                            .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(Messages.color(plugin.getMessages().givelifeSacrificeHover()))))
                             .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/semihardcore:givelife " + args[0] + " confirm")).create());
                 } else
-                    donor.sendMessage(Messages.color(plugin.getMessages().givelifeOneLifeLeft));
+                    donor.sendMessage(Messages.color(plugin.getMessages().givelifeOneLifeLeft()));
             } else {
                 if(plugin.getOptions().playersCanGiveAwayLastLife()) {
                     if(lifeChanges.getLivesLimit() > 0)
                         if(lifeChanges.getLives(receiver) >= lifeChanges.getLivesLimit()) {
-                            donor.sendMessage(Messages.color(plugin.getMessages().givelifeLivesLimitHit));
+                            donor.sendMessage(Messages.color(plugin.getMessages().givelifeLivesLimitHit()));
                             return true;
                         }
                     if(args.length > 1)
@@ -98,22 +98,22 @@ public class GiveLifeCommand implements CommandExecutor {
                             return true;
                         }
                     donor.spigot().sendMessage(
-                        new ComponentBuilder(Messages.color(plugin.getMessages().givelifeGiveawayConfirmation.replace("%receiver%", receiver.getName())))
-                            .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(Messages.color(plugin.getMessages().givelifeGiveawayHover))))
+                        new ComponentBuilder(Messages.color(plugin.getMessages().givelifeGiveawayConfirmation().replace("%receiver%", receiver.getName())))
+                            .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(Messages.color(plugin.getMessages().givelifeGiveawayHover()))))
                             .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/semihardcore:givelife " + args[0] + " confirm")).create());
                 } else
-                    donor.sendMessage(Messages.color(plugin.getMessages().givelifeOneLifeLeft));
+                    donor.sendMessage(Messages.color(plugin.getMessages().givelifeOneLifeLeft()));
             }
             return true;
 
         }
         if(lifeChanges.getLives(receiver) == 0) {
-            donor.sendMessage(Messages.color(plugin.getMessages().givelifeCannotRevive));
+            donor.sendMessage(Messages.color(plugin.getMessages().givelifeCannotRevive()));
             return true;
         }
         if(lifeChanges.getLivesLimit() > 0)
             if(lifeChanges.getLives(receiver) >= lifeChanges.getLivesLimit()) {
-                donor.sendMessage(Messages.color(plugin.getMessages().givelifeLivesLimitHit));
+                donor.sendMessage(Messages.color(plugin.getMessages().givelifeLivesLimitHit()));
                 return true;
             }
         lifeChanges.setLives(receiver, lifeChanges.getLives(receiver) + 1);
