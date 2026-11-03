@@ -222,7 +222,6 @@ public record Messages(
      * @param file The messages.yml file configuration.
      */
     public void saveToFile(FileConfiguration file) {
-        List<String> comments = file.getComments("");
         file.set("welcome-message.constant", this.welcomeConstant);
         file.set("welcome-message.range", this.welcomeRange);
         file.set("lives-message.plural", this.livesPlural);
@@ -276,7 +275,6 @@ public record Messages(
         file.set("setlives-command-messages.success", this.setlivesSuccess);
         file.set("revive-command-messages.alive-player", this.reviveAlivePlayer);
         file.set("revive-command-messages.success", this.reviveSuccess);
-        file.setComments("", comments);
     }
 
     private static String commandUnspecifiedPlayer(YamlFile messagesFile) {
