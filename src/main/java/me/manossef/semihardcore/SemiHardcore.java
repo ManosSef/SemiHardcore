@@ -25,6 +25,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -87,6 +88,7 @@ public final class SemiHardcore extends JavaPlugin {
         this.options.saveToFile(this.getConfig());
         this.saveConfig();
         this.messagesFile = new YamlFile(this, "messages.yml");
+        if(!this.validateMessages()) return;
         this.messages = new Messages(this.messagesFile);
         this.messagesFile.saveDefaultConfig();
         this.messagesFile.reloadConfig();
@@ -201,6 +203,67 @@ public final class SemiHardcore extends JavaPlugin {
             this.error("Found that \"lifesteal.min-lives-to-be-robbed\" is greater than \"lives-limit\". Players can't have a life count above the limit, so this plugin is being disabled.");
             return false;
         }
+        return true;
+    }
+
+    private boolean validateMessages() {
+        List<String> paths = List.of(
+            "welcome-message.constant",
+            "welcome-message.range",
+            "lives-message.plural",
+            "lives-message.singular",
+            "lives-message.none",
+            "lives-message-after-death.plural",
+            "lives-message-after-death.singular",
+            "lives-message-after-death.none",
+            "lives-message-after-death.none-title",
+            "lives-title-after-donation",
+            "lives-message-after-donation.plural",
+            "lives-message-after-donation.singular",
+            "lives-message-after-donation.none",
+            "lives-message-after-being-generous.plural",
+            "lives-message-after-being-generous.singular",
+            "lives-message-after-being-generous.none",
+            "lives-message-after-lifesteal.plural",
+            "lives-message-after-lifesteal.singular",
+            "lives-message-after-lifesteal.none",
+            "revive-message",
+            "revive-title",
+            "command-messages.unspecified-player",
+            "givelife-command-errors.unspecified-player",
+            "addlife-command-messages.unspecified-player",
+            "setlives-command-messages.unspecified-player",
+            "revive-command-messages.unspecified-player",
+            "command-messages.not-found",
+            "givelife-command-errors.not-found",
+            "addlife-command-messages.not-found",
+            "setlives-command-messages.not-found",
+            "revive-command-messages.not-found",
+            "command-messages.cannot-revive",
+            "addlife-command-messages.cannot-revive",
+            "setlives-command-messages.cannot-revive",
+            "givelife-command-errors.disabled",
+            "givelife-command-errors.self-reference",
+            "givelife-command-errors.no-lives-left",
+            "givelife-command-errors.one-life-left",
+            "givelife-command-errors.cannot-revive",
+            "givelife-command-errors.lives-limit-hit",
+            "givelife-command-messages.revival-warning",
+            "givelife-command-messages.sacrifice-confirmation",
+            "givelife-command-messages.sacrifice-hover",
+            "givelife-command-messages.giveaway-confirmation",
+            "givelife-command-messages.giveaway-hover",
+            "addlife-command-messages.lives-limit-hit",
+            "addlife-command-messages.success",
+            "setlives-command-messages.unspecified-lives",
+            "setlives-command-messages.invalid-lives",
+            "setlives-command-messages.limited-success",
+            "setlives-command-messages.success",
+            "revive-command-messages.alive-player",
+            "revive-command-messages.success"
+        );
+        for(String path : paths)
+            if(!OptionValidations.checkStringOption(path, this, this.messagesFile.getConfig())) return false;
         return true;
     }
 
