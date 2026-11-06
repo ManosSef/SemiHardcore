@@ -24,10 +24,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -94,7 +91,7 @@ public final class SemiHardcore extends JavaPlugin {
         this.messagesFile.reloadConfig();
         this.messages.saveToFile(this.messagesFile.getConfig());
         this.messagesFile.saveConfig();
-        this.convertLegacyLifeData();
+        Map<UUID, Integer> legacyLives = this.convertLegacyLifeData();
         File deadPlayersFile = new File(this.getDataFolder().toPath() + "/deadPlayers.yml");
         if(deadPlayersFile.exists()) {
             this.getLogger().info("Found a legacy deadPlayers.yml file. Deleting.");
@@ -103,7 +100,7 @@ public final class SemiHardcore extends JavaPlugin {
         }
         if(this.options.forceHardDifficulty()) this.makeWorldsHard();
         this.makeWorldsHardcoreHearts(this.options.hardcoreHearts());
-        this.getServer().getPluginManager().registerEvents(new Listeners(this), this);
+        this.getServer().getPluginManager().registerEvents(new Listeners(this, legacyLives), this);
         this.registerCommands();
         if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             this.getLogger().log(Level.INFO, "PlaceholderAPI detected. Enabling the placeholder expansion.");
@@ -281,29 +278,43 @@ public final class SemiHardcore extends JavaPlugin {
         command.setTabCompleter(tabCompleter);
     }
 
-    private void convertLegacyLifeData() {
+    private Map<UUID, Integer> convertLegacyLifeData() {
         File livesFile = new File(this.getDataFolder().toPath() + "/lives.yml");
-        if(!livesFile.exists()) return;
+        if(!livesFile.exists()) return null;
         this.getLogger().info("Found a legacy lives.yml file. Converting legacy life data...");
-        ConfigurationSection section = new YamlFile(this, "lives.yml").getConfig().getConfigurationSection("lives");
+        YamlFile yamlFile = new YamlFile(this, "lives.yml");
+        ConfigurationSection section = yamlFile.getConfig().getConfigurationSection("lives");
         if(section == null) {
             this.getLogger().info("No legacy life data was found. Deleting the file.");
             if(!livesFile.delete())
                 this.getLogger().warning("Failed to delete the lives.yml file.");
-            return;
+            return null;
         }
+        Map<UUID, Integer> legacyLives = new HashMap<>();
+        Set<UUID> toRemove = new HashSet<>();
         section.getKeys(false).forEach(key -> {
             if(!TypeChecks.isUUID(key)) return;
-            Player player = Bukkit.getPlayer(UUID.fromString(key));
+            UUID uuid = UUID.fromString(key);
+            Player player = Bukkit.getPlayer(uuid);
+            int count = section.getInt(key);
             if(player == null) {
-                this.getLogger().warning("Found legacy life count for UUID " + key + ", which doesn't match any player. Ignoring.");
+                legacyLives.put(uuid, count);
                 return;
             }
-            if(!this.lifeChanges.hasLives(player)) this.lifeChanges.setLives(player, Math.max(section.getInt(key), 0));
+            if(!this.lifeChanges.hasLives(player)) {
+                this.lifeChanges.setLives(player, Math.max(count, 0));
+                toRemove.add(uuid);
+            }
         });
-        this.getLogger().info("Converted all legacy life data. Deleting the file.");
-        if(!livesFile.delete())
-            this.getLogger().warning("Failed to delete the lives.yml file.");
+        if(legacyLives.isEmpty()) {
+            this.getLogger().info("All legacy life data has been converted. Deleting the file.");
+            if(!livesFile.delete())
+                this.getLogger().warning("Failed to delete the lives.yml file.");
+            return null;
+        }
+        for(UUID uuid : toRemove) yamlFile.getConfig().set("lives." + uuid, null);
+        yamlFile.saveConfig();
+        return legacyLives;
     }
 
     private void error(String message) {

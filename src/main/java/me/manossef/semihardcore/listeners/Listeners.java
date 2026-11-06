@@ -15,14 +15,20 @@ import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.io.File;
+import java.util.Map;
+import java.util.UUID;
+
 /**
  * SemiHardcore's listener class. This class should be of no interest to add-ons.
  */
 public final class Listeners implements Listener {
     private final SemiHardcore plugin;
+    private final Map<UUID, Integer> legacyLives;
 
-    public Listeners(SemiHardcore plugin) {
+    public Listeners(SemiHardcore plugin, Map<UUID, Integer> legacyLives) {
         this.plugin = plugin;
+        this.legacyLives = legacyLives;
     }
 
     /**
@@ -34,15 +40,26 @@ public final class Listeners implements Listener {
         Player player = event.getPlayer();
         LifeChanges lifeChanges = plugin.getLifeChanges();
         if(!lifeChanges.hasLives(player)) {
-            player.setGameMode(GameMode.SURVIVAL);
-            lifeChanges.setLives(player, lifeChanges.getLivesForNewPlayer());
-            lifeChanges.welcomeMessage(player);
-        } else if(lifeChanges.getLives(player) > 0) {
-            player.setGameMode(GameMode.SURVIVAL);
-            lifeChanges.setLives(player, lifeChanges.getLives(player));
-            lifeChanges.livesMessage(player);
+            if(this.legacyLives != null && this.legacyLives.containsKey(player.getUniqueId())) {
+                Integer lives = this.legacyLives.get(player.getUniqueId());
+                player.setGameMode(lives > 0 ? GameMode.SURVIVAL : GameMode.SPECTATOR);
+                lifeChanges.setLives(player, lives);
+                lifeChanges.livesMessage(player);
+                this.legacyLives.remove(player.getUniqueId());
+                if(this.legacyLives.isEmpty()) {
+                    plugin.getLogger().info("All legacy life data has been converted. Deleting the lives.yml file.");
+                    if(!new File(plugin.getDataFolder().toPath() + "/lives.yml").delete())
+                        plugin.getLogger().warning("Failed to delete the lives.yml file.");
+                }
+            } else {
+                player.setGameMode(GameMode.SURVIVAL);
+                lifeChanges.setLives(player, lifeChanges.getLivesForNewPlayer());
+                lifeChanges.welcomeMessage(player);
+            }
         } else {
-            player.setGameMode(GameMode.SPECTATOR);
+            int lives = lifeChanges.getLives(player);
+            player.setGameMode(lives > 0 ? GameMode.SURVIVAL : GameMode.SPECTATOR);
+            lifeChanges.setLives(player, lives);
             lifeChanges.livesMessage(player);
         }
     }
