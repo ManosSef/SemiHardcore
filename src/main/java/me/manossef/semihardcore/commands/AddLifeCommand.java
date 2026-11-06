@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 /**
  * Handles the implementation of the plugin's {@code /addlife} command.
  */
-public class AddLifeCommand implements CommandExecutor {
+public final class AddLifeCommand implements CommandExecutor {
     private final SemiHardcore plugin;
 
     public AddLifeCommand(SemiHardcore plugin) {

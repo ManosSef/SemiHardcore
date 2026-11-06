@@ -18,7 +18,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 /**
  * SemiHardcore's listener class. This class should be of no interest to add-ons.
  */
-public class Listeners implements Listener {
+public final class Listeners implements Listener {
     private final SemiHardcore plugin;
 
     public Listeners(SemiHardcore plugin) {
@@ -39,14 +39,11 @@ public class Listeners implements Listener {
             lifeChanges.welcomeMessage(player);
         } else if(lifeChanges.getLives(player) > 0) {
             player.setGameMode(GameMode.SURVIVAL);
-            lifeChanges.livesMessage(player);
-        } else if(lifeChanges.isDead(player)) {
-            player.setGameMode(GameMode.SPECTATOR);
+            lifeChanges.setLives(player, lifeChanges.getLives(player));
             lifeChanges.livesMessage(player);
         } else {
-            player.setGameMode(GameMode.SURVIVAL);
-            lifeChanges.setLives(player, lifeChanges.getLivesForNewPlayer());
-            lifeChanges.welcomeMessage(player);
+            player.setGameMode(GameMode.SPECTATOR);
+            lifeChanges.livesMessage(player);
         }
     }
 

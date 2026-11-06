@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 /**
  * Handles the implementation of the plugin's {@code /lives} command.
  */
-public class LivesCommand implements CommandExecutor {
+public final class LivesCommand implements CommandExecutor {
     private final SemiHardcore plugin;
 
     public LivesCommand(SemiHardcore plugin) {

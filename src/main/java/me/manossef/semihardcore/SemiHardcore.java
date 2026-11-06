@@ -7,7 +7,6 @@ import me.manossef.api.alexandria.config.OptionValidations;
 import me.manossef.api.alexandria.files.YamlFile;
 import me.manossef.api.alexandria.updates.SpigotMCUpdateChecker;
 import me.manossef.semihardcore.commands.*;
-import me.manossef.semihardcore.data.LifeData;
 import me.manossef.semihardcore.data.Messages;
 import me.manossef.semihardcore.data.Options;
 import me.manossef.semihardcore.data.Placeholders;
@@ -19,12 +18,15 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.logging.Level;
 
 /**
@@ -34,18 +36,20 @@ import java.util.logging.Level;
  * Every add-on for this plugin should first check if the plugin found on the server is an instance of this class, to
  * make sure the plugin is correct, and also so that the various resources contained in this class can be used.
  */
-public class SemiHardcore extends JavaPlugin {
+public final class SemiHardcore extends JavaPlugin {
+    /**
+     * This field should be of no interest to add-ons.
+     */
+    public static final String LIFE_COUNT_KEY = "lives";
     /**
      * This field should be of no interest to add-ons.
      */
     public static final String SACRIFICED_STATUS_KEY = "sacrificed";
 
-    private YamlFile livesFile;
     private YamlFile messagesFile;
     private LifeChanges lifeChanges;
     private Options options;
     private Messages messages;
-    private LifeData lifeData;
 
     /**
      * Runs automatically when the plugin is enabled, and must never be called by any plugin add-ons.
@@ -62,15 +66,9 @@ public class SemiHardcore extends JavaPlugin {
             new SpigotMCUpdateChecker(this, 95152, "semihardcore").checkForUpdates();
         } catch(MalformedURLException ignored) {
         }
-        if(isUnsupportedVersion()) {
+        if(this.isUnsupportedVersion()) {
             this.error("SemiHardcore has dropped support for versions below 1.17. This server is running a Minecraft version below 1.17, so this plugin is being disabled.");
             return;
-        }
-        File deadPlayersFile = new File(this.getDataFolder().toPath() + "/deadPlayers.yml");
-        if(deadPlayersFile.exists()) {
-            this.getLogger().log(Level.INFO, "Found legacy deadPlayers.yml file. Deleting.");
-            if(!deadPlayersFile.delete())
-                this.getLogger().log(Level.WARNING, "Failed to delete deadPlayers.yml file.");
         }
         this.lifeChanges = new LifeChanges(this);
         if(!this.validateOptions()) return;
@@ -88,27 +86,35 @@ public class SemiHardcore extends JavaPlugin {
         this.reloadConfig();
         this.options.saveToFile(this.getConfig());
         this.saveConfig();
-        this.livesFile = new YamlFile(this, "lives.yml");
         this.messagesFile = new YamlFile(this, "messages.yml");
         this.messages = new Messages(this.messagesFile);
         this.messagesFile.saveDefaultConfig();
         this.messagesFile.reloadConfig();
         this.messages.saveToFile(this.messagesFile.getConfig());
         this.messagesFile.saveConfig();
-        this.populateLifeData();
+        this.convertLegacyLifeData();
+        File deadPlayersFile = new File(this.getDataFolder().toPath() + "/deadPlayers.yml");
+        if(deadPlayersFile.exists()) {
+            this.getLogger().info("Found a legacy deadPlayers.yml file. Deleting.");
+            if(!deadPlayersFile.delete())
+                this.getLogger().warning("Failed to delete the deadPlayers.yml file.");
+        }
         if(this.options.forceHardDifficulty()) this.makeWorldsHard();
         this.makeWorldsHardcoreHearts(this.options.hardcoreHearts());
         this.getServer().getPluginManager().registerEvents(new Listeners(this), this);
         this.registerCommands();
         if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-            this.getLogger().log(Level.INFO, "PlaceholderAPI detected. Enabling placeholder expansion.");
+            this.getLogger().log(Level.INFO, "PlaceholderAPI detected. Enabling the placeholder expansion.");
             new Placeholders(this).register();
         }
         Bukkit.getOnlinePlayers().forEach(player -> {
             if(!this.lifeChanges.hasLives(player)) {
                 this.lifeChanges.setLives(player, this.lifeChanges.getLivesForNewPlayer());
                 this.lifeChanges.welcomeMessage(player);
-            } else this.lifeChanges.livesMessage(player);
+            } else {
+                this.lifeChanges.setLives(player, this.lifeChanges.getLives(player));
+                this.lifeChanges.livesMessage(player);
+            }
         });
     }
 
@@ -119,11 +125,6 @@ public class SemiHardcore extends JavaPlugin {
     public void onDisable() {
         if(isUnsupportedVersion())
             return;
-        try {
-            this.lifeData.saveToFile(this.livesFile.getConfig());
-            this.livesFile.saveConfig();
-        } catch(Exception ignored) {
-        }
         this.makeWorldsHardcoreHearts(this.getServer().isHardcore());
     }
 
@@ -153,27 +154,11 @@ public class SemiHardcore extends JavaPlugin {
     }
 
     /**
-     * Returns the lives.yml file as a {@link YamlFile}.
-     * @return The lives.yml file data.
-     */
-    public YamlFile getLivesFile() {
-        return this.livesFile;
-    }
-
-    /**
      * Returns the messages.yml file as a {@link YamlFile}.
      * @return The messages.yml file data.
      */
     public YamlFile getMessagesFile() {
         return this.messagesFile;
-    }
-
-    /**
-     * Returns the internal life data.
-     * @return The plugin's life data.
-     */
-    protected LifeData getLifeData() {
-        return this.lifeData;
     }
 
     private boolean isUnsupportedVersion() {
@@ -232,15 +217,29 @@ public class SemiHardcore extends JavaPlugin {
         command.setTabCompleter(tabCompleter);
     }
 
-    private void populateLifeData() {
-        Map<UUID, Integer> lives = new HashMap<>();
-        ConfigurationSection section = this.livesFile.getConfig().getConfigurationSection("lives");
-        if(section != null)
-            section.getKeys(false).forEach(key -> {
-                if(TypeChecks.isUUID(key))
-                    lives.put(UUID.fromString(key), Math.max(section.getInt(key), 0));
-            });
-        this.lifeData = new LifeData(lives, this.options.livesLimit());
+    private void convertLegacyLifeData() {
+        File livesFile = new File(this.getDataFolder().toPath() + "/lives.yml");
+        if(!livesFile.exists()) return;
+        this.getLogger().info("Found a legacy lives.yml file. Converting legacy life data...");
+        ConfigurationSection section = new YamlFile(this, "lives.yml").getConfig().getConfigurationSection("lives");
+        if(section == null) {
+            this.getLogger().info("No legacy life data was found. Deleting the file.");
+            if(!livesFile.delete())
+                this.getLogger().warning("Failed to delete the lives.yml file.");
+            return;
+        }
+        section.getKeys(false).forEach(key -> {
+            if(!TypeChecks.isUUID(key)) return;
+            Player player = Bukkit.getPlayer(UUID.fromString(key));
+            if(player == null) {
+                this.getLogger().warning("Found legacy life count for UUID " + key + ", which doesn't match any player. Ignoring.");
+                return;
+            }
+            if(!this.lifeChanges.hasLives(player)) this.lifeChanges.setLives(player, Math.max(section.getInt(key), 0));
+        });
+        this.getLogger().info("Converted all legacy life data. Deleting the file.");
+        if(!livesFile.delete())
+            this.getLogger().warning("Failed to delete the lives.yml file.");
     }
 
     private void error(String message) {

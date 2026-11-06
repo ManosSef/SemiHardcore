@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 /**
  * Handles the implementation of the plugin's {@code /revive} command.
  */
-public class ReviveCommand implements CommandExecutor {
+public final class ReviveCommand implements CommandExecutor {
     private final SemiHardcore plugin;
 
     public ReviveCommand(SemiHardcore plugin) {

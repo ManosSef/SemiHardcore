@@ -19,7 +19,7 @@ import org.bukkit.persistence.PersistentDataType;
 /**
  * Handles the implementation of the plugin's {@code /givelife} command.
  */
-public class GiveLifeCommand implements CommandExecutor {
+public final class GiveLifeCommand implements CommandExecutor {
     private final SemiHardcore plugin;
 
     public GiveLifeCommand(SemiHardcore plugin) {

@@ -13,7 +13,7 @@ import org.bukkit.entity.Player;
 /**
  * Handles the implementation of the plugin's {@code /setlives} command.
  */
-public class SetLivesCommand implements CommandExecutor {
+public final class SetLivesCommand implements CommandExecutor {
     private final SemiHardcore plugin;
 
     public SetLivesCommand(SemiHardcore plugin) {

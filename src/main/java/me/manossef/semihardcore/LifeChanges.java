@@ -4,12 +4,10 @@ import me.manossef.api.alexandria.Worlds;
 import me.manossef.semihardcore.data.Messages;
 import me.manossef.semihardcore.listeners.PlayerLifeChangeEvent;
 import me.manossef.semihardcore.listeners.PlayerReviveEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.EntityEffect;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -21,10 +19,10 @@ import java.util.concurrent.ThreadLocalRandom;
  * Every action related to players gaining or losing lives is done by this class. A lot of other utility methods meant
  * to be used by add-ons are also contained in this class.
  */
-public class LifeChanges {
+public final class LifeChanges {
     private final SemiHardcore plugin;
 
-    protected LifeChanges(SemiHardcore plugin) {
+    LifeChanges(SemiHardcore plugin) {
         this.plugin = plugin;
     }
 
@@ -32,9 +30,12 @@ public class LifeChanges {
      * Returns the number of lives the specified player currently has.
      * @param player The player in question.
      * @return The player's life count.
+     * @throws NoSuchElementException If the specified player has no life count yet.
      */
     public int getLives(Player player) {
-        return plugin.getLifeData().getLives(player.getUniqueId());
+        Integer lives = player.getPersistentDataContainer().get(new NamespacedKey(plugin, SemiHardcore.LIFE_COUNT_KEY), PersistentDataType.INTEGER);
+        if(lives == null) throw new NoSuchElementException("Player " + player.getName() + " has no lives yet");
+        return lives;
     }
 
     /**
@@ -45,7 +46,7 @@ public class LifeChanges {
      * @return {@code true} if the player has a life count, {@code false} otherwise.
      */
     public boolean hasLives(Player player) {
-        return plugin.getLifeData().hasLives(player.getUniqueId());
+        return player.getPersistentDataContainer().has(new NamespacedKey(plugin, SemiHardcore.LIFE_COUNT_KEY), PersistentDataType.INTEGER);
     }
 
     /**
@@ -56,7 +57,7 @@ public class LifeChanges {
     public Map<Player, Integer> getOnlinePlayerLifeMap() {
         Map<Player, Integer> lives = new HashMap<>();
         Bukkit.getOnlinePlayers().forEach(player -> {
-            if(hasLives(player))
+            if(this.hasLives(player))
                 lives.put(player, getLives(player));
         });
         return lives;
@@ -68,9 +69,9 @@ public class LifeChanges {
      * @return {@code true} if the player is dead, {@code false} otherwise.
      */
     public boolean isDead(Player player) {
-        if(!hasLives(player))
+        if(!this.hasLives(player))
             return false;
-        return getLives(player) == 0;
+        return this.getLives(player) == 0;
     }
 
     /**
@@ -80,7 +81,7 @@ public class LifeChanges {
     public Set<Player> getDeadOnlinePlayers() {
         Set<Player> deadPlayers = new HashSet<>();
         Bukkit.getOnlinePlayers().forEach(player -> {
-            if(isDead(player))
+            if(this.isDead(player))
                 deadPlayers.add(player);
         });
         return deadPlayers;
@@ -97,8 +98,9 @@ public class LifeChanges {
     public void setLives(Player player, int lives) {
         if(lives < 0)
             throw new IllegalArgumentException("Life count cannot be negative");
-        int currentCount = plugin.getLifeData().hasLives(player.getUniqueId()) ? plugin.getLifeData().getLives(player.getUniqueId()) : 0;
-        int newCount = plugin.getLifeData().setLives(player.getUniqueId(), lives);
+        int currentCount = this.hasLives(player) ? this.getLives(player) : 0;
+        int newCount = Math.min(lives, plugin.getOptions().livesLimit());
+        player.getPersistentDataContainer().set(new NamespacedKey(plugin, SemiHardcore.LIFE_COUNT_KEY), PersistentDataType.INTEGER, newCount);
         if(currentCount != newCount) Bukkit.getPluginManager().callEvent(new PlayerLifeChangeEvent(player, newCount));
     }
 
@@ -107,7 +109,7 @@ public class LifeChanges {
      * @param player The player in question.
      */
     public void setLivesZeroAndKill(Player player) {
-        plugin.getLifeData().setLives(player.getUniqueId(), 0);
+        this.setLives(player, 0);
         player.setHealth(0);
     }
 
@@ -158,7 +160,7 @@ public class LifeChanges {
         player.setSaturation(20);
         player.setGameMode(GameMode.SURVIVAL);
         player.playEffect(EntityEffect.TOTEM_RESURRECT);
-        sendTitle(player, Messages.color(plugin.getMessages().reviveTitle()));
+        this.sendTitle(player, Messages.color(plugin.getMessages().reviveTitle()));
         player.sendMessage(Messages.color(plugin.getMessages().revive().replace("%lives%", Integer.toString(this.getLives(player)))));
     }
 

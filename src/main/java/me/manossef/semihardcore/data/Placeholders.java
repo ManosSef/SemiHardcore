@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
  * The {@link PlaceholderExpansion} for this plugin. It handles placeholders in text when PlaceholderAPI is installed.
  * This class should be of no interest to add-ons.
  */
-public class Placeholders extends PlaceholderExpansion {
+public final class Placeholders extends PlaceholderExpansion {
     private final SemiHardcore plugin;
 
     public Placeholders(SemiHardcore plugin) {
