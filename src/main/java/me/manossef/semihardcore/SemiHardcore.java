@@ -35,6 +35,11 @@ import java.util.logging.Level;
  * make sure the plugin is correct, and also so that the various resources contained in this class can be used.
  */
 public class SemiHardcore extends JavaPlugin {
+    /**
+     * This field should be of no interest to add-ons.
+     */
+    public static final String SACRIFICED_STATUS_KEY = "sacrificed";
+
     private YamlFile livesFile;
     private YamlFile messagesFile;
     private LifeChanges lifeChanges;

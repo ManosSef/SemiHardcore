@@ -4,6 +4,7 @@ import me.manossef.semihardcore.LifeChanges;
 import me.manossef.semihardcore.SemiHardcore;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,6 +12,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
@@ -59,10 +61,11 @@ public class Listeners implements Listener {
         int previousLifeCount = lifeChanges.getLives(player);
         lifeChanges.setLives(player, Math.max(previousLifeCount - 1, 0));
         if(lifeChanges.isDead(player)) {
-            if(!lifeChanges.getSacrificedPlayers().contains(player.getUniqueId()))
+            NamespacedKey sacrificed = new NamespacedKey(plugin, SemiHardcore.SACRIFICED_STATUS_KEY);
+            if(!player.getPersistentDataContainer().has(sacrificed, PersistentDataType.BYTE))
                 lifeChanges.livesMessageAfterDeath(player);
             else
-                lifeChanges.removeSacrificedPlayer(player.getUniqueId());
+                player.getPersistentDataContainer().remove(sacrificed);
             if(plugin.getOptions().lightningStrikeOnLastDeath())
                 player.getWorld().strikeLightningEffect(player.getLocation());
         } else

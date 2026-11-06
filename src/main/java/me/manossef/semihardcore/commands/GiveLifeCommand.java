@@ -9,14 +9,12 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.hover.content.Text;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.EntityEffect;
-import org.bukkit.Particle;
+import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataType;
 
 /**
  * Handles the implementation of the plugin's {@code /givelife} command.
@@ -56,11 +54,12 @@ public class GiveLifeCommand implements CommandExecutor {
             return true;
         }
         if(lifeChanges.getLives(donor) == 1) {
+            NamespacedKey sacrificed = new NamespacedKey(plugin, SemiHardcore.SACRIFICED_STATUS_KEY);
             if(lifeChanges.getLives(receiver) == 0) {
                 if(plugin.getOptions().sacrificesForRevival()) {
                     if(args.length > 1)
                         if(args[1].equals("confirm")) {
-                            lifeChanges.addSacrificedPlayer(donor.getUniqueId());
+                            donor.getPersistentDataContainer().set(sacrificed, PersistentDataType.BYTE, (byte) 1);
                             lifeChanges.setLivesZeroAndKill(donor);
                             Bukkit.getPluginManager().callEvent(new PlayerSacrificeEvent(donor));
                             Bukkit.getPluginManager().callEvent(new PlayerLifeGiveawayEvent(donor, receiver));
@@ -85,7 +84,7 @@ public class GiveLifeCommand implements CommandExecutor {
                         }
                     if(args.length > 1)
                         if(args[1].equals("confirm")) {
-                            lifeChanges.addSacrificedPlayer(donor.getUniqueId());
+                            donor.getPersistentDataContainer().set(sacrificed, PersistentDataType.BYTE, (byte) 1);
                             lifeChanges.setLivesZeroAndKill(donor);
                             Bukkit.getPluginManager().callEvent(new PlayerSacrificeEvent(donor));
                             Bukkit.getPluginManager().callEvent(new PlayerLifeGiveawayEvent(donor, receiver));

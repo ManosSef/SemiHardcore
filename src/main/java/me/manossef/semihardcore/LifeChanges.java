@@ -4,7 +4,10 @@ import me.manossef.api.alexandria.Worlds;
 import me.manossef.semihardcore.data.Messages;
 import me.manossef.semihardcore.listeners.PlayerLifeChangeEvent;
 import me.manossef.semihardcore.listeners.PlayerReviveEvent;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.EntityEffect;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 
@@ -20,38 +23,9 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class LifeChanges {
     private final SemiHardcore plugin;
-    private final Set<UUID> sacrificedPlayers;
 
     protected LifeChanges(SemiHardcore plugin) {
         this.plugin = plugin;
-        this.sacrificedPlayers = new HashSet<>();
-    }
-
-    /**
-     * Returns a set containing the UUIDs of all players currently marked as being sacrificed. Note that this almost
-     * always returns an empty set, since the set is only used to temporarily store a player being sacrificed so the
-     * plugin can show them the correct message.
-     * @return The set of players being sacrificed.
-     */
-    public Set<UUID> getSacrificedPlayers() {
-        return this.sacrificedPlayers;
-    }
-
-    /**
-     * Adds a player's UUID to the set of UUIDs of players currently being sacrificed.
-     * @param uuid The player's UUID.
-     */
-    public void addSacrificedPlayer(UUID uuid) {
-        this.sacrificedPlayers.add(uuid);
-    }
-
-    /**
-     * Removes a player's UUID from the set of UUIDs of players currently being sacrificed, if it's currently contained
-     * in the set.
-     * @param uuid The player's UUID.
-     */
-    public void removeSacrificedPlayer(UUID uuid) {
-        this.sacrificedPlayers.remove(uuid);
     }
 
     /**

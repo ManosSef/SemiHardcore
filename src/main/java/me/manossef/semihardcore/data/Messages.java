@@ -4,8 +4,6 @@ import me.manossef.api.alexandria.files.YamlFile;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import java.util.List;
-
 /**
  * This class stores all messages used by the plugin. The plugin creates an instance of this class when it's enabled,
  * and uses it throughout the running of the server. Creating any new instances of this class has no effect on the
