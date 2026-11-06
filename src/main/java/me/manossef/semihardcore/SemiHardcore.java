@@ -180,11 +180,12 @@ public final class SemiHardcore extends JavaPlugin {
         if(!OptionValidations.checkBooleanOption("hardcore-hearts", this)) return false;
         if(!OptionValidations.checkBooleanOption("force-hard-difficulty", this)) return false;
         if(!OptionValidations.checkIntOption("lives-limit", 0, this)) return false;
-        if(this.getConfig().getInt("starting-lives.min", 3) > this.getConfig().getInt("lives-limit", 5)) {
+        int livesLimit = this.getConfig().getInt("lives-limit", 5);
+        if(livesLimit > 0 && this.getConfig().getInt("starting-lives.min", 3) > livesLimit) {
             this.error("Found that \"starting-lives.min\" is greater than \"lives-limit\". Players can't start with a life count above the limit, so this plugin is being disabled.");
             return false;
         }
-        if(this.getConfig().getInt("starting-lives.max", 3) > this.getConfig().getInt("lives-limit", 5)) {
+        if(livesLimit > 0 && this.getConfig().getInt("starting-lives.max", 3) > livesLimit) {
             this.error("Found that \"starting-lives.max\" is greater than \"lives-limit\". Players can't start with a life count above the limit, so this plugin is being disabled.");
             return false;
         }
@@ -194,12 +195,12 @@ public final class SemiHardcore extends JavaPlugin {
         if(!OptionValidations.checkBooleanOption("players-can-give-away-last-life", this)) return false;
         if(!OptionValidations.checkBooleanOption("lifesteal.enabled", this)) return false;
         if(!OptionValidations.checkIntOption("lifesteal.max-lives-to-steal", 1, this)) return false;
-        if(this.getConfig().getInt("lifesteal.max-lives-to-steal", 2) > this.getConfig().getInt("lives-limit", 5)) {
+        if(livesLimit > 0 && this.getConfig().getInt("lifesteal.max-lives-to-steal", 2) > livesLimit) {
             this.error("Found that \"lifesteal.max-lives-to-steal\" is greater than \"lives-limit\". Players can't have a life count above the limit, so this plugin is being disabled.");
             return false;
         }
         if(!OptionValidations.checkIntOption("lifesteal.min-lives-to-be-robbed", 1, this)) return false;
-        if(this.getConfig().getInt("lifesteal.min-lives-to-be-robbed", 4) > this.getConfig().getInt("lives-limit", 5)) {
+        if(livesLimit > 0 && this.getConfig().getInt("lifesteal.min-lives-to-be-robbed", 4) > livesLimit) {
             this.error("Found that \"lifesteal.min-lives-to-be-robbed\" is greater than \"lives-limit\". Players can't have a life count above the limit, so this plugin is being disabled.");
             return false;
         }

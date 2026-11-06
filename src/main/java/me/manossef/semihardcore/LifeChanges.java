@@ -99,7 +99,8 @@ public final class LifeChanges {
         if(lives < 0)
             throw new IllegalArgumentException("Life count cannot be negative");
         int currentCount = this.hasLives(player) ? this.getLives(player) : 0;
-        int newCount = Math.min(lives, plugin.getOptions().livesLimit());
+        int limit = plugin.getOptions().livesLimit();
+        int newCount = limit > 0 ? Math.min(lives, limit) : lives;
         player.getPersistentDataContainer().set(new NamespacedKey(plugin, SemiHardcore.LIFE_COUNT_KEY), PersistentDataType.INTEGER, newCount);
         if(currentCount != newCount) Bukkit.getPluginManager().callEvent(new PlayerLifeChangeEvent(player, newCount));
     }
