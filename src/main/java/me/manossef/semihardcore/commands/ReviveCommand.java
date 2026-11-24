@@ -1,5 +1,7 @@
 package me.manossef.semihardcore.commands;
 
+import me.manossef.api.alexandria.TypeChecks;
+import me.manossef.semihardcore.LifeChanges;
 import me.manossef.semihardcore.SemiHardcore;
 import me.manossef.semihardcore.data.Messages;
 import org.bukkit.Bukkit;
@@ -28,12 +30,29 @@ public final class ReviveCommand implements CommandExecutor {
             sender.sendMessage(Messages.color(plugin.getMessages().commandNotFound()));
             return true;
         }
-        if(plugin.getLifeChanges().getLives(player) != 0) {
+        LifeChanges lifeChanges = plugin.getLifeChanges();
+        if(lifeChanges.getLives(player) != 0) {
             sender.sendMessage(Messages.color(plugin.getMessages().reviveAlivePlayer()));
             return true;
         }
-        plugin.getLifeChanges().revivePlayer(player);
-        sender.sendMessage(Messages.color(plugin.getMessages().reviveSuccess()).replace("%player%", args[0]));
+        if(args.length == 1) {
+            lifeChanges.revivePlayer(player);
+            sender.sendMessage(Messages.color(plugin.getMessages().reviveSuccess()).replace("%player%", args[0]).replace("%lives%", String.valueOf(1)));
+            return true;
+        }
+        if(!TypeChecks.isInt(args[1])) {
+            sender.sendMessage(Messages.color(plugin.getMessages().commandInvalidLives()));
+            return true;
+        }
+        int lives = Integer.parseInt(args[1]);
+        if(lives <= 0) {
+            sender.sendMessage(Messages.color(plugin.getMessages().commandInvalidLives()));
+            return true;
+        }
+        lifeChanges.revivePlayer(player, lives);
+        int newCount = lifeChanges.getLives(player);
+        if(newCount != lives) sender.sendMessage(Messages.color(plugin.getMessages().reviveLimitedSuccess()).replace("%player%", args[0]).replace("%lives%", args[1]).replace("%limit%", String.valueOf(newCount)));
+        else sender.sendMessage(Messages.color(plugin.getMessages().reviveSuccess()).replace("%player%", args[0]).replace("%lives%", args[1]));
         return true;
     }
 }

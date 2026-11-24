@@ -227,6 +227,8 @@ public final class SemiHardcore extends JavaPlugin {
             "lives-message-after-lifesteal.singular",
             "lives-message-after-lifesteal.none",
             "revive-message",
+            "revive-message.plural",
+            "revive-message.singular",
             "revive-title",
             "command-messages.unspecified-player",
             "givelife-command-errors.unspecified-player",
@@ -241,6 +243,7 @@ public final class SemiHardcore extends JavaPlugin {
             "command-messages.cannot-revive",
             "addlife-command-messages.cannot-revive",
             "setlives-command-messages.cannot-revive",
+            "command-messages.invalid-lives",
             "givelife-command-errors.disabled",
             "givelife-command-errors.self-reference",
             "givelife-command-errors.no-lives-left",
@@ -259,7 +262,8 @@ public final class SemiHardcore extends JavaPlugin {
             "setlives-command-messages.limited-success",
             "setlives-command-messages.success",
             "revive-command-messages.alive-player",
-            "revive-command-messages.success"
+            "revive-command-messages.success",
+            "revive-command-messages.limited-success"
         );
         for(String path : paths)
             if(!OptionValidations.checkStringOption(path, this, this.messagesFile.getConfig())) return false;
@@ -271,7 +275,7 @@ public final class SemiHardcore extends JavaPlugin {
         setUpCommand(Objects.requireNonNull(this.getCommand("setlives")), new SetLivesCommand(this), TabCompletions.completers(TabCompletions.players(), TabCompletions.literals("1", "2", "3", "4", "5")));
         setUpCommand(Objects.requireNonNull(this.getCommand("addlife")), new AddLifeCommand(this), TabCompletions.playersAtFirst());
         setUpCommand(Objects.requireNonNull(this.getCommand("givelife")), new GiveLifeCommand(this), TabCompletions.playersAtFirst());
-        setUpCommand(Objects.requireNonNull(this.getCommand("revive")), new ReviveCommand(this), TabCompletions.playersAtFirst());
+        setUpCommand(Objects.requireNonNull(this.getCommand("revive")), new ReviveCommand(this), TabCompletions.completers(TabCompletions.players(), TabCompletions.literals("1", "2", "3", "4", "5")));
     }
 
     private void setUpCommand(PluginCommand command, CommandExecutor executor, TabCompleter tabCompleter) {

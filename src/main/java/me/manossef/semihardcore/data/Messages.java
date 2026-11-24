@@ -45,7 +45,10 @@ import org.bukkit.configuration.file.FileConfiguration;
  *                                    appear, but it exists just in case.
  * @param livesAfterLifestealNone Message "lives-message-after-lifesteal.none". This message shouldn't ever appear, but
  *                                it exists just in case.
- * @param revive Message "revive-message". Appears when a player is revived by the {@code /revive} command.
+ * @param revivePlural Message "revive-message.plural". Appears when a player is revived by the {@code /revive} command
+ *                     and receives more than one life.
+ * @param reviveSingular Message "revive-message.singular". Appears when a player is revived by the {@code /revive}
+ *                       command and receives exactly one life.
  * @param reviveTitle Message "revive-title". Appears as a title when a player is revived.
  * @param commandUnspecifiedPlayer Message "command-messages.unspecified-player". Appears when a SemiHardcore command is
  *                                 used without a player specified.
@@ -53,6 +56,9 @@ import org.bukkit.configuration.file.FileConfiguration;
  *                        specified player is not found.
  * @param commandCannotRevive Message "command-messages.cannot-revive". Appears when either the {@code /addlife} or
  *                            {@code /setlives} command is used on a dead player.
+ * @param commandInvalidLives Message "command-messages.invalid-lives". Appears when either the {@code /revive} or
+ *                            {@code /setlives} command is used with an invalid life count or a life count out of
+ *                            bounds.
  * @param givelifeDisabled Message "givelife-command-errors.disabled". Appears when a player tries to use the {@code
  *                         /givelife} command but giving away lives is disabled.
  * @param givelifeSelfReference Message "givelife-command-errors.self-reference". Appears when a player tries to use the
@@ -85,8 +91,6 @@ import org.bukkit.configuration.file.FileConfiguration;
  *                       successfully adds a life to a player.
  * @param setlivesUnspecifiedLives Message "setlives-command-messages.unspecified-lives". Appears when the {@code
  *                                 /setlives} command is used without a life count specified.
- * @param setlivesInvalidLives Message "setlives-command-messages.invalid-lives". Appears when the {@code /setlives}
- *                             command is used with an invalid life count or a life count out of bounds.
  * @param setlivesLimitedSuccess Message "setlives-command-messages.limited-success". Appears when the {@code /setlives}
  *                               command successfully changes a player's life count to the upper limit of lives because
  *                               the life count specified was greater than that.
@@ -96,6 +100,9 @@ import org.bukkit.configuration.file.FileConfiguration;
  *                          used on an alive player.
  * @param reviveSuccess Message "revive-command-messages.success". Appears when the {@code /revive} command successfully
  *                      revives a player.
+ * @param reviveLimitedSuccess Message "revive-command-messages.limited-success". Appears when the {@code /revive}
+ *                             command successfully revives a player with the upper limit of lives as the life count
+ *                             because the life count specified was greater than that.
  */
 public record Messages(
     String welcomeConstant,
@@ -117,11 +124,13 @@ public record Messages(
     String livesAfterLifestealPlural,
     String livesAfterLifestealSingular,
     String livesAfterLifestealNone,
-    String revive,
+    String revivePlural,
+    String reviveSingular,
     String reviveTitle,
     String commandUnspecifiedPlayer,
     String commandNotFound,
     String commandCannotRevive,
+    String commandInvalidLives,
     String givelifeDisabled,
     String givelifeSelfReference,
     String givelifeNoLivesLeft,
@@ -136,11 +145,11 @@ public record Messages(
     String addlifeLivesLimitHit,
     String addlifeSuccess,
     String setlivesUnspecifiedLives,
-    String setlivesInvalidLives,
     String setlivesLimitedSuccess,
     String setlivesSuccess,
     String reviveAlivePlayer,
-    String reviveSuccess
+    String reviveSuccess,
+    String reviveLimitedSuccess
 ) {
     public Messages(YamlFile messagesFile) {
         this(
@@ -171,11 +180,13 @@ public record Messages(
             messagesFile.getConfig().getString("lives-message-after-lifesteal.plural", "&aYou stole a life from %victim%! You have %lives% lives left."),
             messagesFile.getConfig().getString("lives-message-after-lifesteal.singular", "&aYou stole a life from %victim%! You only have %lives% life left."),
             messagesFile.getConfig().getString("lives-message-after-lifesteal.none", "&aYou stole a life from %victim%! You have no lives left. You are a spectator."),
-            messagesFile.getConfig().getString("revive-message", "&aYou have been revived! You now have %lives% life left."),
+            messagesFile.getConfig().getString("revive-message.plural", "&aYou have been revived! You now have %lives% lives left."),
+            reviveMessageSingular(messagesFile),
             messagesFile.getConfig().getString("revive-title", "&dYou are revived!"),
             commandUnspecifiedPlayer(messagesFile),
             commandNotFound(messagesFile),
             commandCannotRevive(messagesFile),
+            commandInvalidLives(messagesFile),
             messagesFile.getConfig().getString("givelife-command-errors.disabled", "&cGenerosity has been turned off."),
             messagesFile.getConfig().getString("givelife-command-errors.self-reference", "&cYou cannot give a life to yourself."),
             messagesFile.getConfig().getString("givelife-command-errors.no-lives-left", "&cYou cannot give a life to anybody if you don't have any."),
@@ -196,12 +207,13 @@ public record Messages(
                 "&cCould not add a life to %player% as they have reached the life limit."),
             messagesFile.getConfig().getString("addlife-command-messages.success", "&aAdded a life to %player%."),
             messagesFile.getConfig().getString("setlives-command-messages.unspecified-lives", "&cYou need to specify a number of lives."),
-            messagesFile.getConfig().getString("setlives-command-messages.invalid-lives", "&cInvalid number of lives."),
             messagesFile.getConfig().getString("setlives-command-messages.limited-success",
                 "&aSet %player%'s lives to %limit% (your input, %lives%, is above the life limit)."),
             messagesFile.getConfig().getString("setlives-command-messages.success", "&aSet %player%'s lives to %lives%."),
             messagesFile.getConfig().getString("revive-command-messages.alive-player", "&cThat player is alive."),
-            messagesFile.getConfig().getString("revive-command-messages.success", "&aRevived %player%.")
+            messagesFile.getConfig().getString("revive-command-messages.success", "&aRevived %player% with a life count of %lives%."),
+            messagesFile.getConfig().getString("revive-command-messages.limited-success",
+                "&aRevived %player% with a life count of %limit% (your input, %lives%, is above the life limit).")
         );
     }
 
@@ -239,7 +251,9 @@ public record Messages(
         file.set("lives-message-after-lifesteal.plural", this.livesAfterLifestealPlural);
         file.set("lives-message-after-lifesteal.singular", this.livesAfterLifestealSingular);
         file.set("lives-message-after-lifesteal.none", this.livesAfterLifestealNone);
-        file.set("revive-message", this.revive);
+        file.set("revive-message", null);
+        file.set("revive-message.plural", this.revivePlural);
+        file.set("revive-message.singular", this.reviveSingular);
         file.set("revive-title", this.reviveTitle);
         file.set("command-messages.unspecified-player", this.commandUnspecifiedPlayer);
         file.set("givelife-command-errors.unspecified-player", null);
@@ -254,6 +268,7 @@ public record Messages(
         file.set("command-messages.cannot-revive", this.commandCannotRevive);
         file.set("addlife-command-messages.cannot-revive", null);
         file.set("setlives-command-messages.cannot-revive", null);
+        file.set("command-messages.invalid-lives", this.commandInvalidLives);
         file.set("givelife-command-errors.disabled", this.givelifeDisabled);
         file.set("givelife-command-errors.self-reference", this.givelifeSelfReference);
         file.set("givelife-command-errors.no-lives-left", this.givelifeNoLivesLeft);
@@ -268,48 +283,60 @@ public record Messages(
         file.set("addlife-command-messages.lives-limit-hit", this.addlifeLivesLimitHit);
         file.set("addlife-command-messages.success", this.addlifeSuccess);
         file.set("setlives-command-messages.unspecified-lives", this.setlivesUnspecifiedLives);
-        file.set("setlives-command-messages.invalid-lives", this.setlivesInvalidLives);
+        file.set("setlives-command-messages.invalid-lives", null);
         file.set("setlives-command-messages.limited-success", this.setlivesLimitedSuccess);
         file.set("setlives-command-messages.success", this.setlivesSuccess);
         file.set("revive-command-messages.alive-player", this.reviveAlivePlayer);
         file.set("revive-command-messages.success", this.reviveSuccess);
+        file.set("revive-command-messages.limited-success", this.reviveLimitedSuccess);
+    }
+
+    private static String reviveMessageSingular(YamlFile messagesFile) {
+        FileConfiguration messages = messagesFile.getConfig();
+        String singular = messages.getString("revive-message.singular");
+        if(singular != null) return singular;
+        else return messages.getString("revive-message", "&aYou have been revived! You now have %lives% life left.");
     }
 
     private static String commandUnspecifiedPlayer(YamlFile messagesFile) {
         FileConfiguration messages = messagesFile.getConfig();
-        if(messages.getString("givelife-command-errors.unspecified-player") != null)
-            return messages.getString("givelife-command-errors.unspecified-player");
-        else if(messages.getString("addlife-command-messages.unspecified-player") != null)
-            return messages.getString("addlife-command-messages.unspecified-player");
-        else if(messages.getString("setlives-command-messages.unspecified-player") != null)
-            return messages.getString("setlives-command-messages.unspecified-player");
-        else if(messages.getString("revive-command-messages.unspecified-player") != null)
-            return messages.getString("revive-command-messages.unspecified-player");
-        else
-            return messages.getString("command-messages.unspecified-player", "&cYou need to specify a player.");
+        String command = messages.getString("command-messages.unspecified-player");
+        if(command != null) return command;
+        String givelife = messages.getString("givelife-command-errors.unspecified-player");
+        if(givelife != null) return givelife;
+        String addlife = messages.getString("addlife-command-messages.unspecified-player");
+        if(addlife != null) return addlife;
+        String setlives = messages.getString("setlives-command-messages.unspecified-player");
+        if(setlives != null) return setlives;
+        return messages.getString("revive-command-messages.unspecified-player", "&cYou need to specify a player.");
     }
 
     private static String commandNotFound(YamlFile messagesFile) {
         FileConfiguration messages = messagesFile.getConfig();
-        if(messages.getString("givelife-command-errors.not-found") != null)
-            return messages.getString("givelife-command-errors.not-found");
-        else if(messages.getString("addlife-command-messages.not-found") != null)
-            return messages.getString("addlife-command-messages.not-found");
-        else if(messages.getString("setlives-command-messages.not-found") != null)
-            return messages.getString("setlives-command-messages.not-found");
-        else if(messages.getString("revive-command-messages.not-found") != null)
-            return messages.getString("revive-command-messages.not-found");
-        else
-            return messages.getString("command-messages.not-found", "&cPlayer not found.");
+        String command = messages.getString("command-messages.not-found");
+        if(command != null) return command;
+        String givelife = messages.getString("givelife-command-errors.not-found");
+        if(givelife != null) return givelife;
+        String addlife = messages.getString("addlife-command-messages.not-found");
+        if(addlife != null) return addlife;
+        String setlives = messages.getString("setlives-command-messages.not-found");
+        if(setlives != null) return setlives;
+        return messages.getString("revive-command-messages.not-found", "&cPlayer not found.");
     }
 
     private static String commandCannotRevive(YamlFile messagesFile) {
         FileConfiguration messages = messagesFile.getConfig();
-        if(messages.getString("addlife-command-messages.cannot-revive") != null)
-            return messages.getString("addlife-command-messages.cannot-revive");
-        else if(messages.getString("setlives-command-messages.cannot-revive") != null)
-            return messages.getString("setlives-command-messages.cannot-revive");
-        else
-            return messages.getString("command-messages.cannot-revive", "&cPlease use the /revive command to revive players.");
+        String command = messages.getString("command-messages.cannot-revive");
+        if(command != null) return command;
+        String addlife = messages.getString("addlife-command-messages.cannot-revive");
+        if(addlife != null) return addlife;
+        return messages.getString("setlives-command-messages.cannot-revive", "&cPlease use the /revive command to revive players.");
+    }
+
+    private static String commandInvalidLives(YamlFile messagesFile) {
+        FileConfiguration messages = messagesFile.getConfig();
+        String command = messages.getString("command-messages.invalid-lives");
+        if(command != null) return command;
+        return messages.getString("setlives-command-messages.invalid-lives", "&cInvalid number of lives.");
     }
 }

@@ -9,10 +9,12 @@ import org.bukkit.event.HandlerList;
  */
 public class PlayerReviveEvent extends Event {
     private final Player player;
+    private final int lives;
     private static final HandlerList HANDLERS = new HandlerList();
 
-    public PlayerReviveEvent(Player player) {
+    public PlayerReviveEvent(Player player, int lives) {
         this.player = player;
+        this.lives = lives;
     }
 
     /**
@@ -24,11 +26,19 @@ public class PlayerReviveEvent extends Event {
     }
 
     /**
+     * Returns the number of lives the player received.
+     * @return The life count.
+     */
+    public int getLives() {
+        return this.lives;
+    }
+
+    /**
      * Returns a string representation of the event.
      * @return A string representation of the event.
      */
     public String toString() {
-        return "PlayerReviveEvent[player=" + this.player.getName() + "]";
+        return "PlayerReviveEvent[player=" + this.player.getName() + ", lives=" + this.lives + "]";
     }
 
     public HandlerList getHandlers() {

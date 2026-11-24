@@ -135,9 +135,20 @@ public final class LifeChanges {
     }
 
     /**
-     * Revives the specified player, if they are dead. Reviving includes the following steps:
+     * Revives the specified player and gives them one life, if they are dead.
+     * @param player The player in question.
+     * @apiNote This method is equivalent to running {@link #revivePlayer(Player, int)} on the same player with a value
+     * of 1.
+     */
+    public void revivePlayer(Player player) {
+        this.revivePlayer(player, 1);
+    }
+
+    /**
+     * Revives the specified player and gives them the specified life count, if they are dead. Reviving includes the
+     * following steps:
      * <ul>
-     * <li>The player's life count is set to 1.</li>
+     * <li>The player's life count is set to the value of the {@code lives} parameter.</li>
      * <li>The player is teleported to their last spawn point, or the world spawn
      * point if there was none.</li>
      * <li>The player's health is set to their maximum health.</li>
@@ -146,12 +157,14 @@ public final class LifeChanges {
      * </ul>
      * If the player is not dead, this method does nothing.
      * @param player The player in question.
+     * @param lives The life count.
+     * @throws IllegalArgumentException If {@code lives} is less than 1.
      */
-    public void revivePlayer(Player player) {
-        if(this.getLives(player) > 0)
-            return;
-        this.setLives(player, 1);
-        Bukkit.getPluginManager().callEvent(new PlayerReviveEvent(player));
+    public void revivePlayer(Player player, int lives) {
+        if(lives < 1) throw new IllegalArgumentException("The life count must be positive");
+        if(this.getLives(player) > 0) return;
+        this.setLives(player, lives);
+        Bukkit.getPluginManager().callEvent(new PlayerReviveEvent(player, lives));
         Location loc = ((player.getBedSpawnLocation() == null)
             ? Worlds.getMainWorld().getHighestBlockAt(Worlds.getMainWorld().getSpawnLocation()).getLocation().add(0.5, 1, 0.5)
             : player.getBedSpawnLocation());
@@ -162,7 +175,7 @@ public final class LifeChanges {
         player.setGameMode(GameMode.SURVIVAL);
         player.playEffect(EntityEffect.TOTEM_RESURRECT);
         this.sendTitle(player, Messages.color(plugin.getMessages().reviveTitle()));
-        player.sendMessage(Messages.color(plugin.getMessages().revive().replace("%lives%", Integer.toString(this.getLives(player)))));
+        this.reviveMessage(player);
     }
 
     /**
@@ -238,7 +251,6 @@ public final class LifeChanges {
 
     /**
      * Sends the message shown to a player when they steal a life to the specified player.
-     *
      * @param player The player to be sent the message.
      * @param victim The player to be shown as the victim.
      */
@@ -265,6 +277,17 @@ public final class LifeChanges {
             player.sendMessage(Messages.color(plugin.getMessages().welcomeRange().replace("%min%", Integer.toString(plugin.getOptions().startingLivesMin()))
                 .replace("%max%", Integer.toString(plugin.getOptions().startingLivesMax()))
                 .replace("%lives%", Integer.toString(this.getLives(player)))));
+    }
+
+    /**
+     * Sends the message shown to revived players by the {@code /revive} command to the specified player.
+     * @param player The player in question.
+     */
+    public void reviveMessage(Player player) {
+        if(this.getLives(player) > 1)
+            player.sendMessage(Messages.color(plugin.getMessages().revivePlural().replace("%lives%", Integer.toString(this.getLives(player)))));
+        else
+            player.sendMessage(Messages.color(plugin.getMessages().reviveSingular().replace("%lives%", Integer.toString(this.getLives(player)))));
     }
 
     private void sendTitle(Player player, String title) {
