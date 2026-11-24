@@ -226,7 +226,6 @@ public final class SemiHardcore extends JavaPlugin {
             "lives-message-after-lifesteal.plural",
             "lives-message-after-lifesteal.singular",
             "lives-message-after-lifesteal.none",
-            "revive-message",
             "revive-message.plural",
             "revive-message.singular",
             "revive-title",
@@ -267,6 +266,10 @@ public final class SemiHardcore extends JavaPlugin {
         );
         for(String path : paths)
             if(!OptionValidations.checkStringOption(path, this, this.messagesFile.getConfig())) return false;
+        String oldRevivePath = "revive-message";
+        ConfigurationSection section = this.messagesFile.getConfig().getConfigurationSection(oldRevivePath);
+        if(section == null || section.getKeys(false).isEmpty())
+            return OptionValidations.checkStringOption(oldRevivePath, this, this.messagesFile.getConfig());
         return true;
     }
 
