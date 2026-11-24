@@ -2,6 +2,7 @@ package me.manossef.semihardcore;
 
 import me.manossef.alexandria.Alexandria;
 import me.manossef.api.alexandria.TypeChecks;
+import me.manossef.api.alexandria.Util;
 import me.manossef.api.alexandria.commands.TabCompletions;
 import me.manossef.api.alexandria.config.OptionValidations;
 import me.manossef.api.alexandria.files.YamlFile;
@@ -56,7 +57,7 @@ public final class SemiHardcore extends JavaPlugin {
     public void onEnable() {
         Plugin alexandria = this.getServer().getPluginManager().getPlugin("Alexandria");
         if(!(alexandria instanceof Alexandria parent)) {
-            this.error("Found a plugin called \"Alexandria\" but it seems as though it is the wrong one. Please download Alexandria by ManosSef at https://www.spigotmc.org/resources/alexandria.140195/");
+            Util.disablePluginWithMessage("Found a plugin called \"Alexandria\" but it seems as though it is the wrong one. Please download Alexandria by ManosSef at https://www.spigotmc.org/resources/alexandria.140195/", this);
             return;
         }
         parent.checkVersion("1.0.0", this);
@@ -65,7 +66,7 @@ public final class SemiHardcore extends JavaPlugin {
         } catch(MalformedURLException ignored) {
         }
         if(this.isUnsupportedVersion()) {
-            this.error("SemiHardcore has dropped support for versions below 1.17. This server is running a Minecraft version below 1.17, so this plugin is being disabled.");
+            Util.disablePluginWithMessage("SemiHardcore has dropped support for versions below 1.17. This server is running a Minecraft version below 1.17, so this plugin is being disabled.", this);
             return;
         }
         this.lifeChanges = new LifeChanges(this);
@@ -179,11 +180,11 @@ public final class SemiHardcore extends JavaPlugin {
         if(!OptionValidations.checkIntOption("lives-limit", 0, this)) return false;
         int livesLimit = this.getConfig().getInt("lives-limit", 5);
         if(livesLimit > 0 && this.getConfig().getInt("starting-lives.min", 3) > livesLimit) {
-            this.error("Found that \"starting-lives.min\" is greater than \"lives-limit\". Players can't start with a life count above the limit, so this plugin is being disabled.");
+            Util.disablePluginWithMessage("Found that \"starting-lives.min\" is greater than \"lives-limit\". Players can't start with a life count above the limit, so this plugin is being disabled.", this);
             return false;
         }
         if(livesLimit > 0 && this.getConfig().getInt("starting-lives.max", 3) > livesLimit) {
-            this.error("Found that \"starting-lives.max\" is greater than \"lives-limit\". Players can't start with a life count above the limit, so this plugin is being disabled.");
+            Util.disablePluginWithMessage("Found that \"starting-lives.max\" is greater than \"lives-limit\". Players can't start with a life count above the limit, so this plugin is being disabled.", this);
             return false;
         }
         if(!OptionValidations.checkBooleanOption("players-can-be-generous", this)) return false;
@@ -193,12 +194,12 @@ public final class SemiHardcore extends JavaPlugin {
         if(!OptionValidations.checkBooleanOption("lifesteal.enabled", this)) return false;
         if(!OptionValidations.checkIntOption("lifesteal.max-lives-to-steal", 1, this)) return false;
         if(livesLimit > 0 && this.getConfig().getInt("lifesteal.max-lives-to-steal", 2) > livesLimit) {
-            this.error("Found that \"lifesteal.max-lives-to-steal\" is greater than \"lives-limit\". Players can't have a life count above the limit, so this plugin is being disabled.");
+            Util.disablePluginWithMessage("Found that \"lifesteal.max-lives-to-steal\" is greater than \"lives-limit\". Players can't have a life count above the limit, so this plugin is being disabled.", this);
             return false;
         }
         if(!OptionValidations.checkIntOption("lifesteal.min-lives-to-be-robbed", 1, this)) return false;
         if(livesLimit > 0 && this.getConfig().getInt("lifesteal.min-lives-to-be-robbed", 4) > livesLimit) {
-            this.error("Found that \"lifesteal.min-lives-to-be-robbed\" is greater than \"lives-limit\". Players can't have a life count above the limit, so this plugin is being disabled.");
+            Util.disablePluginWithMessage("Found that \"lifesteal.min-lives-to-be-robbed\" is greater than \"lives-limit\". Players can't have a life count above the limit, so this plugin is being disabled.", this);
             return false;
         }
         return true;
@@ -315,10 +316,5 @@ public final class SemiHardcore extends JavaPlugin {
         for(UUID uuid : toRemove) yamlFile.getConfig().set("lives." + uuid, null);
         yamlFile.saveConfig();
         return legacyLives;
-    }
-
-    private void error(String message) {
-        this.getLogger().severe(message);
-        this.getServer().getPluginManager().disablePlugin(this);
     }
 }

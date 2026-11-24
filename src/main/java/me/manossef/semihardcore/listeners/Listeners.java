@@ -1,5 +1,6 @@
 package me.manossef.semihardcore.listeners;
 
+import me.manossef.api.alexandria.files.YamlFile;
 import me.manossef.semihardcore.LifeChanges;
 import me.manossef.semihardcore.SemiHardcore;
 import org.bukkit.Difficulty;
@@ -45,22 +46,31 @@ public final class Listeners implements Listener {
                 player.setGameMode(lives > 0 ? GameMode.SURVIVAL : GameMode.SPECTATOR);
                 lifeChanges.setLives(player, lives);
                 lifeChanges.livesMessage(player);
-                this.legacyLives.remove(player.getUniqueId());
-                if(this.legacyLives.isEmpty()) {
-                    plugin.getLogger().info("All legacy life data has been converted. Deleting the lives.yml file.");
-                    if(!new File(plugin.getDataFolder().toPath() + "/lives.yml").delete())
-                        plugin.getLogger().warning("Failed to delete the lives.yml file.");
-                }
+                this.removeLegacyLifeData(player);
             } else {
                 player.setGameMode(GameMode.SURVIVAL);
                 lifeChanges.setLives(player, lifeChanges.getLivesForNewPlayer());
                 lifeChanges.welcomeMessage(player);
             }
         } else {
+            if(this.legacyLives != null && this.legacyLives.containsKey(player.getUniqueId()))
+                this.removeLegacyLifeData(player);
             int lives = lifeChanges.getLives(player);
             player.setGameMode(lives > 0 ? GameMode.SURVIVAL : GameMode.SPECTATOR);
             lifeChanges.setLives(player, lives);
             lifeChanges.livesMessage(player);
+        }
+    }
+
+    private void removeLegacyLifeData(Player player) {
+        this.legacyLives.remove(player.getUniqueId());
+        YamlFile yamlFile = new YamlFile(plugin, "lives.yml");
+        yamlFile.getConfig().set("lives." + player.getUniqueId(), null);
+        yamlFile.saveConfig();
+        if(this.legacyLives.isEmpty()) {
+            plugin.getLogger().info("All legacy life data has been converted. Deleting the lives.yml file.");
+            if(!new File(plugin.getDataFolder().toPath() + "/lives.yml").delete())
+                plugin.getLogger().warning("Failed to delete the lives.yml file.");
         }
     }
 
