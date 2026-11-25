@@ -1,5 +1,6 @@
 package me.manossef.semihardcore.data;
 
+import me.manossef.api.alexandria.config.ConfigurationRecord;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.List;
@@ -30,7 +31,8 @@ import java.util.logging.Logger;
 public record Options(int startingLivesMin, int startingLivesMax, boolean hardcoreHearts, boolean forceHardDifficulty,
                       int livesLimit, boolean playersCanBeGenerous, boolean lightningStrikeOnLastDeath,
                       boolean sacrificesForRevival, boolean playersCanGiveAwayLastLife, boolean lifestealEnabled,
-                      int maxLivesToLifesteal, int minLivesToBeLiferobbed, List<String> disableInWorlds) {
+                      int maxLivesToLifesteal, int minLivesToBeLiferobbed, List<String> disableInWorlds)
+    implements ConfigurationRecord {
     /**
      * Logs the current state of the plugin's options to the specified logger in a human-readable way.
      * @param logger The logger to log the options to.
