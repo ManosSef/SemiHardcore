@@ -47,12 +47,18 @@ public final class SetLivesCommand implements CommandExecutor {
         }
         int livesPreviously = lifeChanges.getLives(player);
         if(livesPreviously != 0 && livesAfterwards == 0) {
-            lifeChanges.setLivesZeroAndKill(player);
+            if(!lifeChanges.setLivesZeroAndKill(player)) {
+                sender.sendMessage(Messages.color(plugin.getMessages().commandCanceled()));
+                return true;
+            }
             sender.sendMessage(Messages.color(plugin.getMessages().setlivesSuccess().replace("%player%", args[0]).replace("%lives%", args[1])));
         } else if(livesPreviously == 0 && livesAfterwards != 0) {
             sender.sendMessage(Messages.color(plugin.getMessages().commandCannotRevive()));
         } else {
-            lifeChanges.setLives(player, livesAfterwards);
+            if(!lifeChanges.setLives(player, livesAfterwards)) {
+                sender.sendMessage(Messages.color(plugin.getMessages().commandCanceled()));
+                return true;
+            }
             int newCount = lifeChanges.getLives(player);
             lifeChanges.livesMessage(player);
             sender.sendMessage(livesAfterwards > newCount

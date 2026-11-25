@@ -59,6 +59,8 @@ import org.bukkit.configuration.file.FileConfiguration;
  * @param commandInvalidLives Message "command-messages.invalid-lives". Appears when either the {@code /revive} or
  *                            {@code /setlives} command is used with an invalid life count or a life count out of
  *                            bounds.
+ * @param commandCanceled Message "command-messages.canceled". Appears when a life change caused by a command is
+ *                        canceled.
  * @param givelifeDisabled Message "givelife-command-errors.disabled". Appears when a player tries to use the {@code
  *                         /givelife} command but giving away lives is disabled.
  * @param givelifeSelfReference Message "givelife-command-errors.self-reference". Appears when a player tries to use the
@@ -136,6 +138,7 @@ public record Messages(
     String commandNotFound,
     String commandCannotRevive,
     String commandInvalidLives,
+    String commandCanceled,
     String givelifeDisabled,
     String givelifeSelfReference,
     String givelifeNoLivesLeft,
@@ -194,6 +197,7 @@ public record Messages(
             commandNotFound(messagesFile),
             commandCannotRevive(messagesFile),
             commandInvalidLives(messagesFile),
+            messagesFile.getConfig().getString("command-messages.canceled", "&cThe life change was canceled by an external factor."),
             messagesFile.getConfig().getString("givelife-command-errors.disabled", "&cGenerosity has been turned off."),
             messagesFile.getConfig().getString("givelife-command-errors.self-reference", "&cYou cannot give a life to yourself."),
             messagesFile.getConfig().getString("givelife-command-errors.no-lives-left", "&cYou cannot give a life to anybody if you don't have any."),
@@ -278,6 +282,7 @@ public record Messages(
         file.set("addlife-command-messages.cannot-revive", null);
         file.set("setlives-command-messages.cannot-revive", null);
         file.set("command-messages.invalid-lives", this.commandInvalidLives);
+        file.set("command-messages.canceled", this.commandCanceled);
         file.set("givelife-command-errors.disabled", this.givelifeDisabled);
         file.set("givelife-command-errors.self-reference", this.givelifeSelfReference);
         file.set("givelife-command-errors.no-lives-left", this.givelifeNoLivesLeft);

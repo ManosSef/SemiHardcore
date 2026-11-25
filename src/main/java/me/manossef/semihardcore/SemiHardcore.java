@@ -15,11 +15,13 @@ import me.manossef.semihardcore.listeners.Listeners;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -110,10 +112,10 @@ public final class SemiHardcore extends JavaPlugin {
         }
         Bukkit.getOnlinePlayers().forEach(player -> {
             if(!this.lifeChanges.hasLives(player)) {
-                this.lifeChanges.setLives(player, this.lifeChanges.getLivesForNewPlayer());
+                this.forceSetLives(player, this.lifeChanges.getLivesForNewPlayer());
                 this.lifeChanges.welcomeMessage(player);
             } else {
-                this.lifeChanges.setLives(player, this.lifeChanges.getLives(player));
+                this.forceSetLives(player, this.lifeChanges.getLives(player));
                 this.lifeChanges.livesMessage(player);
             }
         });
@@ -245,6 +247,7 @@ public final class SemiHardcore extends JavaPlugin {
             "addlife-command-messages.cannot-revive",
             "setlives-command-messages.cannot-revive",
             "command-messages.invalid-lives",
+            "command-messages.canceled",
             "givelife-command-errors.disabled",
             "givelife-command-errors.self-reference",
             "givelife-command-errors.no-lives-left",
@@ -314,7 +317,7 @@ public final class SemiHardcore extends JavaPlugin {
                 return;
             }
             if(!this.lifeChanges.hasLives(player)) {
-                this.lifeChanges.setLives(player, Math.max(count, 0));
+                this.forceSetLives(player, Math.max(count, 0));
                 toRemove.add(uuid);
             }
         });
@@ -327,5 +330,12 @@ public final class SemiHardcore extends JavaPlugin {
         for(UUID uuid : toRemove) yamlFile.getConfig().set("lives." + uuid, null);
         yamlFile.saveConfig();
         return legacyLives;
+    }
+
+    private void forceSetLives(Player player, int lives) {
+        if(lives < 0) throw new IllegalArgumentException("Life count cannot be negative");
+        int limit = this.options.livesLimit();
+        int newCount = limit > 0 ? Math.min(lives, limit) : lives;
+        player.getPersistentDataContainer().set(new NamespacedKey(this, LIFE_COUNT_KEY), PersistentDataType.INTEGER, newCount);
     }
 }

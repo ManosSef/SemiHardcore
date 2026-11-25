@@ -33,7 +33,10 @@ public final class AddLifeCommand implements CommandExecutor {
             return true;
         }
         int currentCount = plugin.getLifeChanges().getLives(player);
-        plugin.getLifeChanges().addLife(player);
+        if(!plugin.getLifeChanges().addLife(player)) {
+            sender.sendMessage(Messages.color(plugin.getMessages().commandCanceled()));
+            return true;
+        }
         int newCount = plugin.getLifeChanges().getLives(player);
         plugin.getLifeChanges().livesMessage(player);
         sender.sendMessage(currentCount == newCount ? Messages.color(plugin.getMessages().addlifeLivesLimitHit().replace("%player%", args[0]))

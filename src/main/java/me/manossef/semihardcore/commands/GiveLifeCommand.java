@@ -67,11 +67,20 @@ public final class GiveLifeCommand implements CommandExecutor {
                 if(plugin.getOptions().sacrificesForRevival()) {
                     if(args.length > 1)
                         if(args[1].equals("confirm")) {
+                            PlayerSacrificeEvent event1 = new PlayerSacrificeEvent(donor);
+                            PlayerLifeGiveawayEvent event2 = new PlayerLifeGiveawayEvent(donor, receiver);
+                            Bukkit.getPluginManager().callEvent(event1);
+                            Bukkit.getPluginManager().callEvent(event2);
+                            if(event1.isCancelled() || event2.isCancelled()) {
+                                donor.sendMessage(Messages.color(plugin.getMessages().commandCanceled()));
+                                return true;
+                            }
                             donor.getPersistentDataContainer().set(sacrificed, PersistentDataType.BYTE, (byte) 1);
-                            lifeChanges.setLivesZeroAndKill(donor);
-                            Bukkit.getPluginManager().callEvent(new PlayerSacrificeEvent(donor));
-                            Bukkit.getPluginManager().callEvent(new PlayerLifeGiveawayEvent(donor, receiver));
-                            lifeChanges.revivePlayer(receiver);
+                            if((!lifeChanges.setLivesZeroAndKill(donor)) | (!lifeChanges.revivePlayer(receiver))) {
+                                donor.getPersistentDataContainer().remove(sacrificed);
+                                donor.sendMessage(Messages.color(plugin.getMessages().commandCanceled()));
+                                return true;
+                            }
                             donor.playEffect(EntityEffect.TOTEM_RESURRECT);
                             lifeChanges.livesMessageAfterBeingGenerous(donor, receiver);
                             return true;
@@ -92,11 +101,20 @@ public final class GiveLifeCommand implements CommandExecutor {
                         }
                     if(args.length > 1)
                         if(args[1].equals("confirm")) {
+                            PlayerSacrificeEvent event1 = new PlayerSacrificeEvent(donor);
+                            PlayerLifeGiveawayEvent event2 = new PlayerLifeGiveawayEvent(donor, receiver);
+                            Bukkit.getPluginManager().callEvent(event1);
+                            Bukkit.getPluginManager().callEvent(event2);
+                            if(event1.isCancelled() || event2.isCancelled()) {
+                                donor.sendMessage(Messages.color(plugin.getMessages().commandCanceled()));
+                                return true;
+                            }
                             donor.getPersistentDataContainer().set(sacrificed, PersistentDataType.BYTE, (byte) 1);
-                            lifeChanges.setLivesZeroAndKill(donor);
-                            Bukkit.getPluginManager().callEvent(new PlayerSacrificeEvent(donor));
-                            Bukkit.getPluginManager().callEvent(new PlayerLifeGiveawayEvent(donor, receiver));
-                            lifeChanges.setLives(receiver, lifeChanges.getLives(receiver) + 1);
+                            if((!lifeChanges.setLivesZeroAndKill(donor)) | (!lifeChanges.setLives(receiver, lifeChanges.getLives(receiver) + 1))) {
+                                donor.getPersistentDataContainer().remove(sacrificed);
+                                donor.sendMessage(Messages.color(plugin.getMessages().commandCanceled()));
+                                return true;
+                            }
                             donor.playEffect(EntityEffect.TOTEM_RESURRECT);
                             receiver.spawnParticle(Particle.VILLAGER_HAPPY, receiver.getLocation().getX(), receiver.getLocation().getY(),
                                 receiver.getLocation().getZ(), 100, 1, 1, 1);
@@ -122,9 +140,12 @@ public final class GiveLifeCommand implements CommandExecutor {
                 donor.sendMessage(Messages.color(plugin.getMessages().givelifeLivesLimitHit()));
                 return true;
             }
-        lifeChanges.setLives(receiver, lifeChanges.getLives(receiver) + 1);
-        lifeChanges.setLives(donor, lifeChanges.getLives(donor) - 1);
-        Bukkit.getPluginManager().callEvent(new PlayerLifeGiveawayEvent(donor, receiver));
+        PlayerLifeGiveawayEvent event = new PlayerLifeGiveawayEvent(donor, receiver);
+        Bukkit.getPluginManager().callEvent(event);
+        if(event.isCancelled() || ((!lifeChanges.setLives(receiver, lifeChanges.getLives(receiver) + 1)) | (!lifeChanges.setLives(donor, lifeChanges.getLives(donor) - 1)))) {
+            donor.sendMessage(Messages.color(plugin.getMessages().commandCanceled()));
+            return true;
+        }
         donor.playEffect(EntityEffect.TOTEM_RESURRECT);
         receiver.spawnParticle(Particle.VILLAGER_HAPPY, receiver.getLocation().getX(), receiver.getLocation().getY(), receiver.getLocation().getZ(), 100, 1, 1,
             1);

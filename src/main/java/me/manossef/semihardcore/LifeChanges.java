@@ -89,39 +89,54 @@ public final class LifeChanges {
 
     /**
      * Sets the specified player's life count to the specified number. Note that this will obey the plugin's life limit,
-     * so it is not possible to set a player's life count to a number above the limit. If the life count after this
-     * method is run is different, a {@link PlayerLifeChangeEvent} is called.
+     * so it is not possible to set a player's life count to a number above the limit.
+     * <p>
+     * If the life count after this method is run is different, a {@link PlayerLifeChangeEvent} is called. If the event
+     * is canceled, the player's life count will not change.
      * @param player The player in question.
      * @param lives The new life count.
+     * @return {@code false} if the event is canceled, and {@code true} otherwise.
      * @throws IllegalArgumentException If {@code lives} is negative.
      */
-    public void setLives(Player player, int lives) {
-        if(lives < 0)
-            throw new IllegalArgumentException("Life count cannot be negative");
+    public boolean setLives(Player player, int lives) {
+        if(lives < 0) throw new IllegalArgumentException("Life count cannot be negative");
         int currentCount = this.hasLives(player) ? this.getLives(player) : 0;
         int limit = plugin.getOptions().livesLimit();
         int newCount = limit > 0 ? Math.min(lives, limit) : lives;
-        player.getPersistentDataContainer().set(new NamespacedKey(plugin, SemiHardcore.LIFE_COUNT_KEY), PersistentDataType.INTEGER, newCount);
-        if(currentCount != newCount) Bukkit.getPluginManager().callEvent(new PlayerLifeChangeEvent(player, newCount));
+        if(currentCount != newCount) {
+            PlayerLifeChangeEvent event = new PlayerLifeChangeEvent(player, newCount);
+            Bukkit.getPluginManager().callEvent(event);
+            if(event.isCancelled()) return false;
+            player.getPersistentDataContainer().set(new NamespacedKey(plugin, SemiHardcore.LIFE_COUNT_KEY), PersistentDataType.INTEGER, newCount);
+        }
+        return true;
     }
 
     /**
      * Sets the specified player's life count to zero and kills them.
      * @param player The player in question.
+     * @return {@code false} if the event is canceled, and {@code true} otherwise.
      */
-    public void setLivesZeroAndKill(Player player) {
-        this.setLives(player, 0);
-        player.setHealth(0);
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public boolean setLivesZeroAndKill(Player player) {
+        if(this.setLives(player, 0)) {
+            player.setHealth(0);
+            return true;
+        }
+        return false;
     }
 
     /**
      * Sets the specified player's life count to their current life count plus one life. Note that this will obey the
-     * plugin's life limit, so it is not possible to set a player's life count to a number above the limit. If the life
-     * count after this method is run is different, a {@link PlayerLifeChangeEvent} is called.
+     * plugin's life limit, so it is not possible to set a player's life count to a number above the limit.
+     * <p>
+     * If the life count after this method is run is different, a {@link PlayerLifeChangeEvent} is called. If the event
+     * is canceled, the player's life count will not change.
      * @param player The player in question.
+     * @return {@code false} if the event is canceled, and {@code true} otherwise.
      */
-    public void addLife(Player player) {
-        this.setLives(player, this.getLives(player) + 1);
+    public boolean addLife(Player player) {
+        return this.setLives(player, this.getLives(player) + 1);
     }
 
     /**
@@ -137,11 +152,13 @@ public final class LifeChanges {
     /**
      * Revives the specified player and gives them one life, if they are dead.
      * @param player The player in question.
+     * @return {@code false} if the event is canceled or the player is alive, and {@code true} otherwise.
      * @apiNote This method is equivalent to running {@link #revivePlayer(Player, int)} on the same player with a value
      * of 1.
      */
-    public void revivePlayer(Player player) {
-        this.revivePlayer(player, 1);
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    public boolean revivePlayer(Player player) {
+        return this.revivePlayer(player, 1);
     }
 
     /**
@@ -158,13 +175,16 @@ public final class LifeChanges {
      * If the player is not dead, this method does nothing.
      * @param player The player in question.
      * @param lives The life count.
+     * @return {@code false} if the event is canceled or the player is alive, and {@code true} otherwise.
      * @throws IllegalArgumentException If {@code lives} is less than 1.
      */
-    public void revivePlayer(Player player, int lives) {
+    public boolean revivePlayer(Player player, int lives) {
         if(lives < 1) throw new IllegalArgumentException("The life count must be positive");
-        if(this.getLives(player) > 0) return;
-        this.setLives(player, lives);
-        Bukkit.getPluginManager().callEvent(new PlayerReviveEvent(player, lives));
+        if(this.getLives(player) > 0) return false;
+        PlayerReviveEvent event = new PlayerReviveEvent(player, lives);
+        Bukkit.getPluginManager().callEvent(event);
+        if(event.isCancelled()) return false;
+        if(!this.setLives(player, lives)) return false;
         Location loc = ((player.getBedSpawnLocation() == null)
             ? Worlds.getMainWorld().getHighestBlockAt(Worlds.getMainWorld().getSpawnLocation()).getLocation().add(0.5, 1, 0.5)
             : player.getBedSpawnLocation());
@@ -176,6 +196,7 @@ public final class LifeChanges {
         player.playEffect(EntityEffect.TOTEM_RESURRECT);
         this.sendTitle(player, Messages.color(plugin.getMessages().reviveTitle()));
         this.reviveMessage(player);
+        return true;
     }
 
     /**

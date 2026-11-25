@@ -36,7 +36,10 @@ public final class ReviveCommand implements CommandExecutor {
             return true;
         }
         if(args.length == 1) {
-            lifeChanges.revivePlayer(player);
+            if(!lifeChanges.revivePlayer(player)) {
+                sender.sendMessage(Messages.color(plugin.getMessages().commandCanceled()));
+                return true;
+            }
             sender.sendMessage(Messages.color(plugin.getMessages().reviveSuccess()).replace("%player%", args[0]).replace("%lives%", String.valueOf(1)));
             return true;
         }
@@ -49,7 +52,10 @@ public final class ReviveCommand implements CommandExecutor {
             sender.sendMessage(Messages.color(plugin.getMessages().commandInvalidLives()));
             return true;
         }
-        lifeChanges.revivePlayer(player, lives);
+        if(!lifeChanges.revivePlayer(player, lives)) {
+            sender.sendMessage(Messages.color(plugin.getMessages().commandCanceled()));
+            return true;
+        }
         int newCount = lifeChanges.getLives(player);
         if(newCount != lives) sender.sendMessage(Messages.color(plugin.getMessages().reviveLimitedSuccess()).replace("%player%", args[0]).replace("%lives%", args[1]).replace("%limit%", String.valueOf(newCount)));
         else sender.sendMessage(Messages.color(plugin.getMessages().reviveSuccess()).replace("%player%", args[0]).replace("%lives%", args[1]));
