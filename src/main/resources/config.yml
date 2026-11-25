@@ -34,4 +34,7 @@
 
 # lifesteal.min-lives-to-be-robbed controls the lowest life count that still leaves players vulnerable to
 # being robbed of lives by being killed by other players.
+
+# disable-in-worlds specifies the names of worlds where players do not lose lives upon death and can't
+# give away lives.
 #
