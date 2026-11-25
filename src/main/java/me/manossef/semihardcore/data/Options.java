@@ -2,6 +2,7 @@ package me.manossef.semihardcore.data;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,12 +24,13 @@ import java.util.logging.Logger;
  * @param maxLivesToLifesteal The highest life count that still allows players to steal lives by killing other players.
  * @param minLivesToBeLiferobbed The lowest life count that still leaves players vulnerable to being robbed of lives by
  *                               being killed by other players.
+ * @param disableInWorlds The names of worlds in which players do not lose lives on death and giving lives to other
+ *                        players is disabled.
  */
 public record Options(int startingLivesMin, int startingLivesMax, boolean hardcoreHearts, boolean forceHardDifficulty,
                       int livesLimit, boolean playersCanBeGenerous, boolean lightningStrikeOnLastDeath,
-                      boolean sacrificesForRevival,
-                      boolean playersCanGiveAwayLastLife, boolean lifestealEnabled, int maxLivesToLifesteal,
-                      int minLivesToBeLiferobbed) {
+                      boolean sacrificesForRevival, boolean playersCanGiveAwayLastLife, boolean lifestealEnabled,
+                      int maxLivesToLifesteal, int minLivesToBeLiferobbed, List<String> disableInWorlds) {
     /**
      * Logs the current state of the plugin's options to the specified logger in a human-readable way.
      * @param logger The logger to log the options to.
@@ -46,6 +48,7 @@ public record Options(int startingLivesMin, int startingLivesMax, boolean hardco
         logger.log(Level.INFO, "Life stealing: " + this.lifestealEnabled);
         logger.log(Level.INFO, "Maximum lives to be able to steal lives: " + this.maxLivesToLifesteal);
         logger.log(Level.INFO, "Minimum lives to be able to be robbed of lives: " + this.minLivesToBeLiferobbed);
+        logger.log(Level.INFO, "Worlds where players cannot gain or lose lives: " + this.disableInWorlds);
     }
 
     /**
@@ -65,5 +68,6 @@ public record Options(int startingLivesMin, int startingLivesMax, boolean hardco
         file.set("lifesteal.enabled", this.lifestealEnabled);
         file.set("lifesteal.max-lives-to-steal", this.maxLivesToLifesteal);
         file.set("lifesteal.min-lives-to-be-robbed", this.minLivesToBeLiferobbed);
+        file.set("disable-in-worlds", disableInWorlds);
     }
 }

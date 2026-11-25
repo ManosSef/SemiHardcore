@@ -73,6 +73,11 @@ import org.bukkit.configuration.file.FileConfiguration;
  *                             player tries to give a life to a dead player.
  * @param givelifeLivesLimitHit Message "givelife-command-errors.lives-limit-hit". Appears when a player tries to give a
  *                              life to a player who has hit the upper limit of lives.
+ * @param givelifeDonorInDisabledWorld Message "givelife-command-errors.donor-in-disabled-world". Appears when a player
+ *                                     tries to give a life while being in a world where life changes are disabled.
+ * @param givelifeReceiverInDisabledWorld Message "givelife-command-errors.receiver-in-disabled-world". Appears when a
+ *                                        players tries to give a life to a player in a world where life changes are
+ *                                        disabled.
  * @param givelifeRevivalWarning Message "givelife-command-messages.revival-warning". Appears when a dead player is
  *                               about to be revived by an alive player being sacrificed.
  * @param givelifeSacrificeConfirmation Message "givelife-command-messages.sacrifice-confirmation". Appears when a
@@ -137,6 +142,8 @@ public record Messages(
     String givelifeOneLifeLeft,
     String givelifeCannotRevive,
     String givelifeLivesLimitHit,
+    String givelifeDonorInDisabledWorld,
+    String givelifeReceiverInDisabledWorld,
     String givelifeRevivalWarning,
     String givelifeSacrificeConfirmation,
     String givelifeSacrificeHover,
@@ -192,9 +199,11 @@ public record Messages(
             messagesFile.getConfig().getString("givelife-command-errors.no-lives-left", "&cYou cannot give a life to anybody if you don't have any."),
             messagesFile.getConfig().getString("givelife-command-errors.one-life-left",
                 "&cYou only have one life left. If you gave a life to somebody at this point, you would immediately die."),
-            messagesFile.getConfig().getString("givelife-command-errors.cannot-revive", "&cYou can't give a life to a dead player."),
+            messagesFile.getConfig().getString("givelife-command-errors.cannot-revive", "&cYou cannot give a life to a dead player."),
             messagesFile.getConfig().getString("givelife-command-errors.lives-limit-hit",
                 "&cThat player has reached the life limit and, as a result, you can't give them a life."),
+            messagesFile.getConfig().getString("givelife-command-errors.donor-in-disabled-world", "&cYou cannot give lives while in this world."),
+            messagesFile.getConfig().getString("givelife-command-errors.receiver-in-disabled-world", "&cThat player is in a world where they cannot gain or lose lives."),
             messagesFile.getConfig().getString("givelife-command-messages.revival-warning",
                 "&cWarning! %donor% is about to sacrifice themselves so you get revived!"),
             messagesFile.getConfig().getString("givelife-command-messages.sacrifice-confirmation",
@@ -275,6 +284,8 @@ public record Messages(
         file.set("givelife-command-errors.one-life-left", this.givelifeOneLifeLeft);
         file.set("givelife-command-errors.cannot-revive", this.givelifeCannotRevive);
         file.set("givelife-command-errors.lives-limit-hit", this.givelifeLivesLimitHit);
+        file.set("givelife-command-errors.donor-in-disabled-world", this.givelifeDonorInDisabledWorld);
+        file.set("givelife-command-errors.receiver-in-disabled-world", this.givelifeReceiverInDisabledWorld);
         file.set("givelife-command-messages.revival-warning", this.givelifeRevivalWarning);
         file.set("givelife-command-messages.sacrifice-confirmation", this.givelifeSacrificeConfirmation);
         file.set("givelife-command-messages.sacrifice-hover", this.givelifeSacrificeHover);

@@ -39,6 +39,10 @@ public final class GiveLifeCommand implements CommandExecutor {
             donor.sendMessage(Messages.color(plugin.getMessages().commandUnspecifiedPlayer()));
             return true;
         }
+        if(plugin.getOptions().disableInWorlds().contains(donor.getWorld().getName())) {
+            donor.sendMessage(Messages.color(plugin.getMessages().givelifeDonorInDisabledWorld()));
+            return true;
+        }
         Player receiver = Bukkit.getPlayer(args[0]);
         if(receiver == null) {
             donor.sendMessage(Messages.color(plugin.getMessages().commandNotFound()));
@@ -51,6 +55,10 @@ public final class GiveLifeCommand implements CommandExecutor {
         }
         if(lifeChanges.getLives(donor) < 1) {
             donor.sendMessage(Messages.color(plugin.getMessages().givelifeNoLivesLeft()));
+            return true;
+        }
+        if(plugin.getOptions().disableInWorlds().contains(receiver.getWorld().getName())) {
+            donor.sendMessage(Messages.color(plugin.getMessages().givelifeReceiverInDisabledWorld()));
             return true;
         }
         if(lifeChanges.getLives(donor) == 1) {
@@ -104,7 +112,6 @@ public final class GiveLifeCommand implements CommandExecutor {
                     donor.sendMessage(Messages.color(plugin.getMessages().givelifeOneLifeLeft()));
             }
             return true;
-
         }
         if(lifeChanges.getLives(receiver) == 0) {
             donor.sendMessage(Messages.color(plugin.getMessages().givelifeCannotRevive()));

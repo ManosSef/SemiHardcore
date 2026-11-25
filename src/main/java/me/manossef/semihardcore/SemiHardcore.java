@@ -76,7 +76,8 @@ public final class SemiHardcore extends JavaPlugin {
             this.getConfig().getInt("lives-limit", 5), this.getConfig().getBoolean("players-can-be-generous", true),
             this.getConfig().getBoolean("lightning-strike-on-last-death", false), this.getConfig().getBoolean("sacrifices-for-revival", false),
             this.getConfig().getBoolean("players-can-give-away-last-life", false), this.getConfig().getBoolean("lifesteal.enabled", false),
-            this.getConfig().getInt("lifesteal.max-lives-to-steal", 2), this.getConfig().getInt("lifesteal.min-lives-to-be-robbed", 4));
+            this.getConfig().getInt("lifesteal.max-lives-to-steal", 2), this.getConfig().getInt("lifesteal.min-lives-to-be-robbed", 4),
+            this.getConfig().getStringList("disable-in-worlds"));
         this.options.logOptions(this.getLogger());
         if(((this.options.startingLivesMin() == 1 && this.options.startingLivesMax() == 1) || (this.options.livesLimit() == 1)) && !this.getServer().isHardcore())
             this.getLogger().log(Level.INFO,
@@ -202,6 +203,7 @@ public final class SemiHardcore extends JavaPlugin {
             Util.disablePluginWithMessage("Found that \"lifesteal.min-lives-to-be-robbed\" is greater than \"lives-limit\". Players can't have a life count above the limit, so this plugin is being disabled.", this);
             return false;
         }
+        if(!OptionValidations.checkStringList("disable-in-worlds", this)) return false;
         return true;
     }
 
@@ -249,6 +251,8 @@ public final class SemiHardcore extends JavaPlugin {
             "givelife-command-errors.one-life-left",
             "givelife-command-errors.cannot-revive",
             "givelife-command-errors.lives-limit-hit",
+            "givelife-command-errors.donor-in-disabled-world",
+            "givelife-command-errors.receiver-in-disabled-world",
             "givelife-command-messages.revival-warning",
             "givelife-command-messages.sacrifice-confirmation",
             "givelife-command-messages.sacrifice-hover",

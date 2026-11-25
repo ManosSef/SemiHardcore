@@ -81,6 +81,8 @@ public final class Listeners implements Listener {
     @EventHandler
     public void onDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
+        if(plugin.getOptions().disableInWorlds().contains(player.getWorld().getName()))
+            return;
         LifeChanges lifeChanges = plugin.getLifeChanges();
         int previousLifeCount = lifeChanges.getLives(player);
         lifeChanges.setLives(player, Math.max(previousLifeCount - 1, 0));
