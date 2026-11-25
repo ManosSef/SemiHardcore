@@ -104,7 +104,7 @@ public final class LifeChanges {
         int limit = plugin.getOptions().livesLimit();
         int newCount = limit > 0 ? Math.min(lives, limit) : lives;
         if(currentCount != newCount) {
-            PlayerLifeChangeEvent event = new PlayerLifeChangeEvent(player, newCount);
+            PlayerLifeChangeEvent event = new PlayerLifeChangeEvent(player, currentCount, newCount);
             Bukkit.getPluginManager().callEvent(event);
             if(event.isCancelled()) return false;
             player.getPersistentDataContainer().set(new NamespacedKey(plugin, SemiHardcore.LIFE_COUNT_KEY), PersistentDataType.INTEGER, newCount);

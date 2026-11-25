@@ -12,11 +12,13 @@ import org.bukkit.event.HandlerList;
 public class PlayerLifeChangeEvent extends Event implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
     private final Player player;
+    private final int oldLives;
     private final int newLives;
     private boolean cancelled;
 
-    public PlayerLifeChangeEvent(Player player, int newLives) {
+    public PlayerLifeChangeEvent(Player player, int oldLives, int newLives) {
         this.player = player;
+        this.oldLives = oldLives;
         this.newLives = newLives;
         this.cancelled = false;
     }
@@ -27,6 +29,14 @@ public class PlayerLifeChangeEvent extends Event implements Cancellable {
      */
     public Player getPlayer() {
         return this.player;
+    }
+
+    /**
+     * Returns the player's life count before the life change.
+     * @return The old life count.
+     */
+    public int getOldLives() {
+        return this.oldLives;
     }
 
     /**
@@ -42,7 +52,7 @@ public class PlayerLifeChangeEvent extends Event implements Cancellable {
      * @return A string representation of the event.
      */
     public String toString() {
-        return "PlayerLifeChangeEvent[player=" + this.player.getName() + ", newLives=" + this.newLives + "]";
+        return "PlayerLifeChangeEvent[player=" + this.player.getName() + ", oldLives=" + this.oldLives + ", newLives=" + this.newLives + "]";
     }
 
     public HandlerList getHandlers() {
