@@ -267,6 +267,8 @@ public final class SemiHardcore extends JavaPlugin {
             "setlives-command-messages.invalid-lives",
             "setlives-command-messages.limited-success",
             "setlives-command-messages.success",
+            "setlives-command-messages.same-as-current",
+            "setlives-command-messages.same-as-current-hit-limit",
             "revive-command-messages.alive-player",
             "revive-command-messages.success",
             "revive-command-messages.limited-success"

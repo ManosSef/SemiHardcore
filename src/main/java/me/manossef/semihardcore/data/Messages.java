@@ -103,6 +103,11 @@ import org.bukkit.configuration.file.FileConfiguration;
  *                               the life count specified was greater than that.
  * @param setlivesSuccess Message "setlives-command-messages.success". Appears when the {@code /setlives} command
  *                        successfully changes a player's life count to the specified number.
+ * @param setlivesSameAsCurrent Message "setlives-command-messages.same-as-current". Appears when the {@code /setlives}
+ *                              command tries to set a player's life count to what it's already set to.
+ * @param setlivesSameAsCurrentHitLimit Message "setlives-command-messages.same-as-current-hit-limit". Appears when the
+ *                                      {@code /setlives} command tries to set a player's life count to a value greater
+ *                                      than the life limit while the player's life count is at the life limit.
  * @param reviveAlivePlayer Message "revive-command-messages.alive-player". Appears when the {@code /revive} command is
  *                          used on an alive player.
  * @param reviveSuccess Message "revive-command-messages.success". Appears when the {@code /revive} command successfully
@@ -157,6 +162,8 @@ public record Messages(
     String setlivesUnspecifiedLives,
     String setlivesLimitedSuccess,
     String setlivesSuccess,
+    String setlivesSameAsCurrent,
+    String setlivesSameAsCurrentHitLimit,
     String reviveAlivePlayer,
     String reviveSuccess,
     String reviveLimitedSuccess
@@ -223,6 +230,9 @@ public record Messages(
             messagesFile.getConfig().getString("setlives-command-messages.limited-success",
                 "&aSet %player%'s lives to %limit% (your input, %lives%, is above the life limit)."),
             messagesFile.getConfig().getString("setlives-command-messages.success", "&aSet %player%'s lives to %lives%."),
+            messagesFile.getConfig().getString("setlives-command-messages.same-as-current", "&c%player%'s life count is already %lives%."),
+            messagesFile.getConfig().getString("setlives-command-messages.same-as-current-hit-limit",
+                "&c%player%'s life count is already %limit% (your input, %lives%, is above the life limit)."),
             messagesFile.getConfig().getString("revive-command-messages.alive-player", "&cThat player is alive."),
             messagesFile.getConfig().getString("revive-command-messages.success", "&aRevived %player% with a life count of %lives%."),
             messagesFile.getConfig().getString("revive-command-messages.limited-success",
@@ -302,6 +312,8 @@ public record Messages(
         file.set("setlives-command-messages.invalid-lives", null);
         file.set("setlives-command-messages.limited-success", this.setlivesLimitedSuccess);
         file.set("setlives-command-messages.success", this.setlivesSuccess);
+        file.set("setlives-command-messages.same-as-current", this.setlivesSameAsCurrent);
+        file.set("setlives-command-messages.same-as-current-hit-limit", this.setlivesSameAsCurrentHitLimit);
         file.set("revive-command-messages.alive-player", this.reviveAlivePlayer);
         file.set("revive-command-messages.success", this.reviveSuccess);
         file.set("revive-command-messages.limited-success", this.reviveLimitedSuccess);

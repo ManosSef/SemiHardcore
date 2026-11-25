@@ -60,6 +60,13 @@ public final class SetLivesCommand implements CommandExecutor {
                 return true;
             }
             int newCount = lifeChanges.getLives(player);
+            if(newCount == livesPreviously) {
+                sender.sendMessage(livesAfterwards > newCount
+                    ? Messages.color(plugin.getMessages().setlivesSameAsCurrentHitLimit().replace("%player%", args[0]).replace("%lives%", String.valueOf(livesAfterwards)).replace("%limit%",
+                    Integer.toString(lifeChanges.getLivesLimit())))
+                    : Messages.color(plugin.getMessages().setlivesSameAsCurrent().replace("%player%", args[0]).replace("%lives%", String.valueOf(newCount))));
+                return true;
+            }
             lifeChanges.livesMessage(player);
             sender.sendMessage(livesAfterwards > newCount
                 ? Messages.color(plugin.getMessages().setlivesLimitedSuccess().replace("%player%", args[0]).replace("%lives%", String.valueOf(livesAfterwards)).replace("%limit%",
