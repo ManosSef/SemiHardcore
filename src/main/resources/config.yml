@@ -17,3 +17,24 @@
 
 # players-can-be-generous enables the use of the /givelife command. Turning this off will give your
 # server a 3rd Life style, since players won't be able to give other players lives.
+
+# lightning-strike-on-last-death controls whether a fake lightning effect should spawn on players when
+# they die and lose their last life.
+
+# sacrifices-for-revival controls whether players are allowed to sacrifice themselves (give away their
+# last life) to revive a dead player.
+
+# players-can-give-away-last-life controls whether players are allowed to give away their last life to an
+# alive player.
+
+# lifesteal.enabled controls whether players can steal lives by killing other players.
+
+# lifesteal.max-lives-to-steal controls the highest life count that still allows players to steal lives
+# by killing other players.
+
+# lifesteal.min-lives-to-be-robbed controls the lowest life count that still leaves players vulnerable to
+# being robbed of lives by being killed by other players.
+
+# disable-in-worlds specifies the names of worlds where players do not lose lives upon death and can't
+# give away lives.
+#

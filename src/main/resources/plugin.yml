@@ -3,6 +3,8 @@ name: SemiHardcore
 version: ${plugin.version}
 author: ManosSef
 api-version: 1.17
+depend: [Alexandria]
+softdepend: [PlaceholderAPI]
 commands:
   lives:
     description: Tells you how many lives you have.
@@ -29,4 +31,3 @@ permissions:
     description: Allows the use of the /addlife command.
   semihardcore.revive:
     description: Allows the use of the /revive command.
-softdepend: [PlaceholderAPI]
